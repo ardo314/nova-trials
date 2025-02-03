@@ -9,6 +9,8 @@ import {
 } from "@babylonjs/core";
 import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
 import HavokPhysics from "@babylonjs/havok";
+import { Character } from "./character";
+import { CharacterController } from "./characterController";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
@@ -40,22 +42,19 @@ export class Game implements IDisposable {
       return;
     }
 
-    const blubb = this.deviceSourceManager.onDeviceConnectedObservable.add(
-      (ev) => {
-        console.log("[Nova Trials]", "Device connected", ev);
+    this.scene = scene;
 
-        switch (ev.deviceType) {
-          case DeviceType.Keyboard:
-            ev.onInputChangedObservable.add((ev) => {
-              console.log("[Nova Trials]", "Keyboard input changed", ev);
-            });
-            break;
-        }
-      }
+    const character = new Character(scene);
+    const characterController = new CharacterController(
+      this.deviceSourceManager,
+      character
     );
 
-    this.scene = scene;
-    this.engine.runRenderLoop(() => scene.render());
+    this.engine.runRenderLoop(() => {
+      characterController.update();
+
+      scene.render();
+    });
   }
 
   dispose(): void {

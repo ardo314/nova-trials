@@ -1,5 +1,10 @@
 import { IDisposable, Scene, TransformNode } from "@babylonjs/core";
 
+export interface CharacterInput {
+  forward: number;
+  right: number;
+}
+
 export class Character implements IDisposable {
   readonly node: TransformNode;
   readonly headNode: TransformNode;
