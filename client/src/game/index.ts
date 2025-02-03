@@ -1,9 +1,18 @@
-import { Engine, HavokPlugin, IDisposable, Scene } from "@babylonjs/core";
+import {
+  DeviceSourceManager,
+  DeviceType,
+  Engine,
+  HavokPlugin,
+  IDisposable,
+  Scene,
+  XboxInput,
+} from "@babylonjs/core";
 import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
 import HavokPhysics from "@babylonjs/havok";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
+  private readonly deviceSourceManager: DeviceSourceManager;
   private havokPlugin: HavokPlugin | null = null;
   scene: Scene | null = null;
 
@@ -11,6 +20,7 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Initializing game");
 
     this.engine = new Engine(canvas, true, {}, false);
+    this.deviceSourceManager = new DeviceSourceManager(this.engine);
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
   }
@@ -30,6 +40,20 @@ export class Game implements IDisposable {
       return;
     }
 
+    const blubb = this.deviceSourceManager.onDeviceConnectedObservable.add(
+      (ev) => {
+        console.log("[Nova Trials]", "Device connected", ev);
+
+        switch (ev.deviceType) {
+          case DeviceType.Keyboard:
+            ev.onInputChangedObservable.add((ev) => {
+              console.log("[Nova Trials]", "Keyboard input changed", ev);
+            });
+            break;
+        }
+      }
+    );
+
     this.scene = scene;
     this.engine.runRenderLoop(() => scene.render());
   }
@@ -38,7 +62,8 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Disposing game");
 
     this.engine.dispose();
-    // this.havokPlugin?.dispose();
+    this.deviceSourceManager.dispose();
+    this.havokPlugin?.dispose();
   }
 
   private async loadHavokPhysics() {
