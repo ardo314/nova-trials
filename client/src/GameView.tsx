@@ -37,9 +37,18 @@ export function GameView() {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
       <div
-        style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          pointerEvents: "none",
+        }}
       >
-        <button onClick={toggleInspector}>Toggle Inspector</button>
+        <button style={{ pointerEvents: "auto" }} onClick={toggleInspector}>
+          Toggle Inspector
+        </button>
       </div>
     </div>
   );
