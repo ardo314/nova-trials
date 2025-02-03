@@ -5,9 +5,13 @@ import {
   Vector3,
   HemisphericLight,
   MeshBuilder,
+  IPhysicsEnginePluginV2,
 } from "@babylonjs/core";
 
-export async function loadDefaultScene(engine: Engine): Promise<Scene> {
+export async function loadDefaultScene(
+  engine: Engine,
+  physics: IPhysicsEnginePluginV2
+): Promise<Scene> {
   console.log("[Nova Trials]", "Loading default scene");
 
   const scene = new Scene(engine);

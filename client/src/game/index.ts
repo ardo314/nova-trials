@@ -1,9 +1,10 @@
-import { Engine, IDisposable, Scene } from "@babylonjs/core";
-import { loadDefaultScene as loadDefaultScene } from "./scenes/default-scene";
+import { Engine, HavokPlugin, IDisposable, Scene } from "@babylonjs/core";
+import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
+import HavokPhysics from "@babylonjs/havok";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
-
+  private havokPlugin: HavokPlugin | null = null;
   scene: Scene | null = null;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
@@ -16,7 +17,13 @@ export class Game implements IDisposable {
 
   async start() {
     console.log("[Nova Trials]", "Starting game");
-    const scene = await loadDefaultScene(this.engine);
+
+    this.havokPlugin = await this.loadHavokPhysics();
+
+    const scene = await loadRedLightGreenLightScene(
+      this.engine,
+      this.havokPlugin
+    );
 
     if (this.engine.isDisposed) {
       console.log("[Nova Trials]", "Engine is disposed, aborting start");
@@ -27,10 +34,17 @@ export class Game implements IDisposable {
     this.engine.runRenderLoop(() => scene.render());
   }
 
-  dispose() {
+  dispose(): void {
     console.log("[Nova Trials]", "Disposing game");
 
     this.engine.dispose();
+    // this.havokPlugin?.dispose();
+  }
+
+  private async loadHavokPhysics() {
+    console.log("[Nova Trials]", "Loading Havok Physics");
+
+    return new HavokPlugin(true, await HavokPhysics());
   }
 
   private onWindowResize() {
