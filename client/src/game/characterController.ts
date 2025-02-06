@@ -1,6 +1,7 @@
 import {
   DeviceSourceManager,
   DeviceType,
+  float,
   IDisposable,
   IKeyboardEvent,
   Observer,
@@ -69,7 +70,9 @@ export class CharacterController implements IDisposable {
     }
   }
 
-  update() {}
+  update(dt: float): void {
+    this.character.simulate(this.input, dt);
+  }
 
   dispose(): void {
     this.deviceConnectedObserver.remove();

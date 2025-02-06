@@ -51,7 +51,9 @@ export class Game implements IDisposable {
     );
 
     this.engine.runRenderLoop(() => {
-      characterController.update();
+      const dt = this.engine.getDeltaTime();
+
+      characterController.update(dt);
 
       scene.render();
     });
