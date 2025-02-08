@@ -11,6 +11,7 @@ import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scen
 import HavokPhysics from "@babylonjs/havok";
 import { Character } from "./character";
 import { CharacterController } from "./characterController";
+import { CharacterView } from "./characterView";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
@@ -49,11 +50,14 @@ export class Game implements IDisposable {
       this.deviceSourceManager,
       character
     );
+    const characterView = new CharacterView(scene);
 
     this.engine.runRenderLoop(() => {
       const dt = this.engine.getDeltaTime();
 
       characterController.update(dt);
+      characterView.node.position.copyFrom(character.node.position);
+      characterView.node.rotation.copyFrom(character.node.rotation);
 
       scene.render();
     });
