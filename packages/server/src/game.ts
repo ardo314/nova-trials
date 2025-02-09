@@ -1,4 +1,5 @@
 import { Character } from "./character";
+import { Player } from "./player";
 import { Trial } from "./trials/trial";
 
 export class Game {
@@ -6,9 +7,13 @@ export class Game {
 
   update() {}
 
-  setTrial(trial: Trial) {}
+  onPlayerJoined(player: Player) {}
 
-  elimnate(character: Character) {}
+  onPlayerLeft(player: Player) {}
+
+  startTrial(trial: Trial) {}
+
+  eliminate(character: Character) {}
 
   getCharacters() {
     return this.characters;
