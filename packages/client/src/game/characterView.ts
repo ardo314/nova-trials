@@ -5,12 +5,13 @@ import {
   Scene,
   TransformNode,
 } from "@babylonjs/core";
+import { Character } from "./character";
 
 export class CharacterView implements IDisposable {
-  readonly node: TransformNode;
+  private readonly node: TransformNode;
   private readonly mesh: Mesh;
 
-  constructor(scene: Scene) {
+  constructor(private character: Character, scene: Scene) {
     this.node = new TransformNode("characterView", scene);
     this.mesh = MeshBuilder.CreateBox(
       "box",
@@ -21,7 +22,13 @@ export class CharacterView implements IDisposable {
     this.mesh.position.y = 1;
   }
 
+  update() {
+    this.node.position.copyFrom(this.character.node.position);
+    this.node.rotation.copyFrom(this.character.node.rotation);
+  }
+
   dispose(): void {
+    this.node.dispose();
     this.mesh.dispose();
   }
 }

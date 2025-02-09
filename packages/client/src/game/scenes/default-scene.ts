@@ -10,7 +10,7 @@ import {
 
 export async function loadDefaultScene(
   engine: Engine,
-  physics: IPhysicsEnginePluginV2
+  _: IPhysicsEnginePluginV2
 ): Promise<Scene> {
   console.log("[Nova Trials]", "Loading default scene");
 

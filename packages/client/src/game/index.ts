@@ -1,17 +1,13 @@
 import {
   DeviceSourceManager,
-  DeviceType,
   Engine,
   HavokPlugin,
   IDisposable,
   Scene,
-  XboxInput,
 } from "@babylonjs/core";
 import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
 import HavokPhysics from "@babylonjs/havok";
-import { Character } from "./character";
-import { CharacterController } from "./characterController";
-import { CharacterView } from "./characterView";
+import { hello } from "shared";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
@@ -43,22 +39,10 @@ export class Game implements IDisposable {
       return;
     }
 
+    hello();
     this.scene = scene;
 
-    const character = new Character(scene);
-    const characterController = new CharacterController(
-      this.deviceSourceManager,
-      character
-    );
-    const characterView = new CharacterView(scene);
-
     this.engine.runRenderLoop(() => {
-      const dt = this.engine.getDeltaTime();
-
-      characterController.update(dt);
-      characterView.node.position.copyFrom(character.node.position);
-      characterView.node.rotation.copyFrom(character.node.rotation);
-
       scene.render();
     });
   }
