@@ -1,3 +1,3 @@
 import { hello } from "@nova-trials/shared";
 
-hello();
+console.log(hello());

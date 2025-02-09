@@ -7,7 +7,7 @@ import {
 } from "@babylonjs/core";
 import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
 import HavokPhysics from "@babylonjs/havok";
-import { hello } from "shared";
+import { hello } from "@nova-trials/shared";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
@@ -17,7 +17,7 @@ export class Game implements IDisposable {
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
-
+    console.log(hello());
     this.engine = new Engine(canvas, true, {}, false);
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
 
@@ -39,7 +39,6 @@ export class Game implements IDisposable {
       return;
     }
 
-    hello();
     this.scene = scene;
 
     this.engine.runRenderLoop(() => {
