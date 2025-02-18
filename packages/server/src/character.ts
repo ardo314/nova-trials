@@ -1,7 +1,11 @@
-import { TransformNode } from "@babylonjs/core";
+import { Scene, TransformNode } from "@babylonjs/core";
 
 export class Character {
   private node: TransformNode;
+
+  constructor(private scene: Scene) {
+    this.node = new TransformNode("Character", scene);
+  }
 
   get position() {
     return this.node.position;
@@ -9,9 +13,5 @@ export class Character {
 
   get rotation() {
     return this.node.rotation;
-  }
-
-  constructor() {
-    this.node = new TransformNode("Character");
   }
 }

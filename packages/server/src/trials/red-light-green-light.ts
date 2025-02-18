@@ -13,19 +13,19 @@ export class RedLightGreenLightTrial {
 
   constructor(private game: Game) {}
 
-  private onEnterRedLight() {
+  private startRedLight() {
     this.watchedData = this.game.getCharacters().map((character) => ({
       position: character.position,
       rotation: character.rotation,
     }));
   }
 
-  private onUpdateRedLight() {}
+  private updateRedLight() {}
 
   update() {
     if (this.timer === 0 && !this.redLight) {
       this.redLight = true;
-      this.onEnterRedLight();
+      this.startRedLight();
     }
 
     if (this.timer === 0 && this.redLight) {
@@ -33,7 +33,7 @@ export class RedLightGreenLightTrial {
     }
 
     if (this.redLight) {
-      this.onUpdateRedLight();
+      this.updateRedLight();
     }
   }
 }
