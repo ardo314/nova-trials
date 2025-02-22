@@ -1,10 +1,17 @@
-import { NullEngine } from "@babylonjs/core";
-import { hello } from "@nova-trials/shared";
-import { Game } from "./game";
+/**
+ * IMPORTANT:
+ * ---------
+ * Do not manually edit this file if you'd like to host your server on Colyseus Cloud
+ *
+ * If you're self-hosting (without Colyseus Cloud), you can manually
+ * instantiate a Colyseus Server as documented here:
+ *
+ * See: https://docs.colyseus.io/server/api/#constructor-options
+ */
+import { listen } from "@colyseus/tools";
 
-const engine = new NullEngine();
-const game = new Game();
+// Import Colyseus config
+import app from "./app.config";
 
-engine.runRenderLoop(() => {
-  game.update();
-});
+// Create and listen on 2567 (or PORT environment variable.)
+listen(app);
