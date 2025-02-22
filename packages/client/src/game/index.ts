@@ -7,10 +7,12 @@ import {
 } from "@babylonjs/core";
 import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
 import HavokPhysics from "@babylonjs/havok";
+import { Client } from "colyseus.js";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
   private readonly deviceSourceManager: DeviceSourceManager;
+  private readonly client: Client;
   private havokPlugin: HavokPlugin | null = null;
   scene: Scene | null = null;
 
@@ -19,6 +21,9 @@ export class Game implements IDisposable {
 
     this.engine = new Engine(canvas, true, {}, false);
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
+
+    this.client = new Client("http://localhost:2567");
+    this.client.joinOrCreate("my_room");
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
   }
