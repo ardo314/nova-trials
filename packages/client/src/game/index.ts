@@ -6,7 +6,7 @@ import {
   Scene,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
-import { GameState, ROOM_NAME } from "@nova-trials/shared";
+import { CharacterState, GameState, ROOM_NAME } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 
 const SERVER_HOST = "http://localhost:2567";
@@ -23,6 +23,8 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Initializing game");
 
     this.engine = new Engine(canvas, true, {}, false);
+    this.engine.runRenderLoop(this.onUpdate.bind(this));
+
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.client = new Client(SERVER_HOST);
 
@@ -42,13 +44,25 @@ export class Game implements IDisposable {
   async start() {
     console.log("[Nova Trials]", "Starting game");
 
-    this.havokPlugin = await this.loadHavokPhysics();
+    await this.loadHavokPhysics();
+    await this.join();
+  }
 
-    this.engine.runRenderLoop(() => {
-      this.scene?.render();
-    });
+  private onUpdate() {
+    this.scene?.render();
+  }
 
-    this.join();
+  private onCharacterAdd(character: CharacterState, sessionId: string) {
+    console.log("[Nova Trials]", "Character added", character.name, sessionId);
+  }
+
+  private onCharacterRemove(character: CharacterState, sessionId: string) {
+    console.log(
+      "[Nova Trials]",
+      "Character removed",
+      character.name,
+      sessionId
+    );
   }
 
   private onStateChange() {
@@ -73,12 +87,14 @@ export class Game implements IDisposable {
 
     const $ = getStateCallbacks(this.room);
     $(this.room.state).onChange(this.onStateChange.bind(this));
+    $(this.room.state).characters.onAdd(this.onCharacterAdd.bind(this));
+    $(this.room.state).characters.onRemove(this.onCharacterRemove.bind(this));
   }
 
   private async loadHavokPhysics() {
     console.log("[Nova Trials]", "Loading Havok Physics");
 
-    return new HavokPlugin(true, await HavokPhysics());
+    this.havokPlugin = new HavokPlugin(true, await HavokPhysics());
   }
 
   private onWindowResize() {
