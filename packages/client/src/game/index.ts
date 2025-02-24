@@ -51,8 +51,8 @@ export class Game implements IDisposable {
     this.join();
   }
 
-  private onStateChange(state: GameState) {
-    console.log(state);
+  private onStateChange() {
+    console.log(this.room?.state);
   }
 
   private onError(code: number, message?: string) {
@@ -67,12 +67,12 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Joining room");
 
     this.room = await this.client.joinOrCreate(ROOM_NAME);
-    this.room.onStateChange(this.onStateChange.bind(this));
     this.room.onMessage("*", (type, message) => console.log(type, message));
     this.room.onError(this.onError.bind(this));
     this.room.onLeave(this.onLeave.bind(this));
 
     const $ = getStateCallbacks(this.room);
+    $(this.room.state).onChange(this.onStateChange.bind(this));
   }
 
   private async loadHavokPhysics() {
