@@ -5,15 +5,18 @@ import {
   IDisposable,
   Scene,
 } from "@babylonjs/core";
-import { loadRedLightGreenLightScene } from "./scenes/red-light-green-light-scene";
 import HavokPhysics from "@babylonjs/havok";
-import { Client } from "colyseus.js";
+import { Client, Room } from "colyseus.js";
+import { IGameState, ROOM_NAME } from "@nova-trials/shared";
+
+const SERVER_HOST = "http://localhost:2567";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
   private readonly deviceSourceManager: DeviceSourceManager;
   private readonly client: Client;
   private havokPlugin: HavokPlugin | null = null;
+  private room: Room<IGameState> | null = null;
   scene: Scene | null = null;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
@@ -21,33 +24,9 @@ export class Game implements IDisposable {
 
     this.engine = new Engine(canvas, true, {}, false);
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
-
-    this.client = new Client("http://localhost:2567");
-    this.client.joinOrCreate("my_room");
+    this.client = new Client(SERVER_HOST);
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
-  }
-
-  async start() {
-    console.log("[Nova Trials]", "Starting game");
-
-    this.havokPlugin = await this.loadHavokPhysics();
-
-    const scene = await loadRedLightGreenLightScene(
-      this.engine,
-      this.havokPlugin
-    );
-
-    if (this.engine.isDisposed) {
-      console.log("[Nova Trials]", "Engine is disposed, aborting start");
-      return;
-    }
-
-    this.scene = scene;
-
-    this.engine.runRenderLoop(() => {
-      scene.render();
-    });
   }
 
   dispose(): void {
@@ -56,6 +35,42 @@ export class Game implements IDisposable {
     this.engine.dispose();
     this.deviceSourceManager.dispose();
     this.havokPlugin?.dispose();
+    this.room?.leave();
+    this.room?.removeAllListeners();
+  }
+
+  async start() {
+    console.log("[Nova Trials]", "Starting game");
+
+    this.havokPlugin = await this.loadHavokPhysics();
+
+    this.engine.runRenderLoop(() => {
+      this.scene?.render();
+    });
+
+    this.join();
+  }
+
+  private onStateChange(state: IGameState) {
+    console.log(state);
+  }
+
+  private onError(code: number, message?: string) {
+    console.error("[Nova Trials]", "Error", code, message);
+  }
+
+  private onLeave(code: number) {
+    console.log("[Nova Trials]", "Leaving room", code);
+  }
+
+  private async join() {
+    console.log("[Nova Trials]", "Joining room");
+
+    this.room = await this.client.joinOrCreate(ROOM_NAME);
+    this.room.onStateChange(this.onStateChange.bind(this));
+    this.room.onMessage("*", (type, message) => console.log(type, message));
+    this.room.onError(this.onError.bind(this));
+    this.room.onLeave(this.onLeave.bind(this));
   }
 
   private async loadHavokPhysics() {
