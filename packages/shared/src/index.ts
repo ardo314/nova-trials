@@ -1,5 +1,7 @@
+import { Schema, type } from "@colyseus/schema";
+
 export const ROOM_NAME = "game";
 
-export interface IGameState {
-  mySynchronizedProperty: string;
+export class GameState extends Schema {
+  @type("string") mySynchronizedProperty: string = "Hello world";
 }

@@ -6,8 +6,8 @@ import {
   Scene,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
-import { Client, Room } from "colyseus.js";
-import { IGameState, ROOM_NAME } from "@nova-trials/shared";
+import { GameState, ROOM_NAME } from "@nova-trials/shared";
+import { Client, getStateCallbacks, Room } from "colyseus.js";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -16,7 +16,7 @@ export class Game implements IDisposable {
   private readonly deviceSourceManager: DeviceSourceManager;
   private readonly client: Client;
   private havokPlugin: HavokPlugin | null = null;
-  private room: Room<IGameState> | null = null;
+  private room: Room<GameState> | null = null;
   scene: Scene | null = null;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
@@ -51,7 +51,7 @@ export class Game implements IDisposable {
     this.join();
   }
 
-  private onStateChange(state: IGameState) {
+  private onStateChange(state: GameState) {
     console.log(state);
   }
 
@@ -71,6 +71,8 @@ export class Game implements IDisposable {
     this.room.onMessage("*", (type, message) => console.log(type, message));
     this.room.onError(this.onError.bind(this));
     this.room.onLeave(this.onLeave.bind(this));
+
+    const $ = getStateCallbacks(this.room);
   }
 
   private async loadHavokPhysics() {

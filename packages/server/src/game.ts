@@ -1,10 +1,6 @@
 import { Client, Room } from "colyseus";
 import { Schema, type } from "@colyseus/schema";
-import { IGameState } from "@nova-trials/shared";
-
-export class GameState extends Schema implements IGameState {
-  @type("string") mySynchronizedProperty: string = "Hello world";
-}
+import { GameState } from "@nova-trials/shared";
 
 export class Game extends Room<GameState> {
   state = new GameState();

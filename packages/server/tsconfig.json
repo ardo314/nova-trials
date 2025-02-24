@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "build",
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "ESNext",
     "moduleResolution": "node",
     "strict": true,
     "allowJs": true,
@@ -13,7 +13,6 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": false
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "build"]
 }
