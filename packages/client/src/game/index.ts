@@ -6,7 +6,12 @@ import {
   Scene,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
-import { CharacterState, GameState, ROOM_NAME } from "@nova-trials/shared";
+import {
+  CharacterState,
+  GameState,
+  ROOM_NAME,
+  SetTransform,
+} from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 
 const SERVER_HOST = "http://localhost:2567";
@@ -52,6 +57,16 @@ export class Game implements IDisposable {
     this.scene?.render();
   }
 
+  private sendSetTransformMessage() {
+    const message: SetTransform.Message = {
+      x: 0,
+      y: 0,
+      z: 0,
+    };
+
+    this.room?.sendUnreliable(SetTransform.Type, message);
+  }
+
   private onCharacterAdd(character: CharacterState, sessionId: string) {
     console.log("[Nova Trials]", "Character added", character.name, sessionId);
   }
@@ -63,10 +78,6 @@ export class Game implements IDisposable {
       character.name,
       sessionId
     );
-  }
-
-  private onStateChange() {
-    console.log(this.room?.state);
   }
 
   private onError(code: number, message?: string) {
@@ -86,7 +97,6 @@ export class Game implements IDisposable {
     this.room.onLeave(this.onLeave.bind(this));
 
     const $ = getStateCallbacks(this.room);
-    $(this.room.state).onChange(this.onStateChange.bind(this));
     $(this.room.state).characters.onAdd(this.onCharacterAdd.bind(this));
     $(this.room.state).characters.onRemove(this.onCharacterRemove.bind(this));
   }

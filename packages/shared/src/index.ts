@@ -1,6 +1,16 @@
-import { ArraySchema, MapSchema, Schema, type } from "@colyseus/schema";
+import { MapSchema, Schema, type } from "@colyseus/schema";
 
 export const ROOM_NAME = "game";
+
+export namespace SetTransform {
+  export const Type = "set-transform";
+
+  export type Message = {
+    x: number;
+    y: number;
+    z: number;
+  };
+}
 
 export class PositionState extends Schema {
   @type("number") x: number = 0;

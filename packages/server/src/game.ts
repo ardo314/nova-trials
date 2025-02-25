@@ -1,9 +1,16 @@
 import { Client, Room } from "colyseus";
 import { Schema, type } from "@colyseus/schema";
-import { CharacterState, GameState } from "@nova-trials/shared";
+import { CharacterState, GameState, SetTransform } from "@nova-trials/shared";
+import { on } from "events";
 
 export class Game extends Room<GameState> {
   state = new GameState();
+
+  onCreate(options: any): void | Promise<any> {
+    console.log("room created!");
+
+    this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
+  }
 
   onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined!");
@@ -20,5 +27,14 @@ export class Game extends Room<GameState> {
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");
+  }
+
+  private onSetTransform(client: Client, message: SetTransform.Message) {
+    const character = this.state.characters.get(client.sessionId);
+    if (character) {
+      character.position.x = message.x;
+      character.position.y = message.y;
+      character.position.z = message.z;
+    }
   }
 }
