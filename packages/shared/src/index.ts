@@ -1,6 +1,11 @@
 import { MapSchema, Schema, type } from "@colyseus/schema";
 
 export const ROOM_NAME = "game";
+export const DEFAULT_CHARACTER_NAME = "Player";
+
+export type JoinOptions = {
+  name?: string;
+};
 
 export namespace SetTransform {
   export const Type = "set-transform";

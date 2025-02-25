@@ -1,7 +1,11 @@
 import { Client, Room } from "colyseus";
-import { Schema, type } from "@colyseus/schema";
-import { CharacterState, GameState, SetTransform } from "@nova-trials/shared";
-import { on } from "events";
+import {
+  CharacterState,
+  DEFAULT_CHARACTER_NAME,
+  GameState,
+  JoinOptions,
+  SetTransform,
+} from "@nova-trials/shared";
 
 export class Game extends Room<GameState> {
   state = new GameState();
@@ -12,10 +16,13 @@ export class Game extends Room<GameState> {
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
   }
 
-  onJoin(client: Client, options: any) {
+  onJoin(client: Client, options: JoinOptions) {
     console.log(client.sessionId, "joined!");
 
-    this.state.characters.set(client.sessionId, new CharacterState());
+    const state = new CharacterState();
+    state.name = options.name ?? DEFAULT_CHARACTER_NAME;
+
+    this.state.characters.set(client.sessionId, state);
   }
 
   onLeave(client: Client, consented: boolean) {

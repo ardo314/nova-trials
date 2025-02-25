@@ -8,7 +8,9 @@ import {
 import HavokPhysics from "@babylonjs/havok";
 import {
   CharacterState,
+  DEFAULT_CHARACTER_NAME,
   GameState,
+  JoinOptions,
   ROOM_NAME,
   SetTransform,
 } from "@nova-trials/shared";
@@ -91,7 +93,11 @@ export class Game implements IDisposable {
   private async join() {
     console.log("[Nova Trials]", "Joining room");
 
-    this.room = await this.client.joinOrCreate(ROOM_NAME);
+    const options: JoinOptions = {
+      name: DEFAULT_CHARACTER_NAME,
+    };
+
+    this.room = await this.client.joinOrCreate(ROOM_NAME, options);
     this.room.onMessage("*", (type, message) => console.log(type, message));
     this.room.onError(this.onError.bind(this));
     this.room.onLeave(this.onLeave.bind(this));
