@@ -5,6 +5,7 @@ import {
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
+import { CharacterState } from "@nova-trials/shared";
 
 export interface CharacterInput {
   forward: number;
@@ -34,5 +35,12 @@ export class Character implements IDisposable {
 
   dispose(): void {
     this.node.dispose();
+  }
+
+  fromState(state: CharacterState): void {
+    const { x, y, z } = state.position;
+    const { x: rx, y: ry, z: rz } = state.rotation;
+    this.node.position.copyFromFloats(x, y, z);
+    this.node.rotation.copyFromFloats(rx, ry, rz);
   }
 }

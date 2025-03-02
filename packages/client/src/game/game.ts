@@ -15,6 +15,8 @@ import {
   SetTransform,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
+import { Character } from "./character";
+import { CharacterView } from "./characterView";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -24,13 +26,16 @@ export class Game implements IDisposable {
   private readonly client: Client;
   private havokPlugin: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
-  scene: Scene | null = null;
+  private readonly characters: Record<string, Character> = {};
+  scene: Scene;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
 
     this.engine = new Engine(canvas, true, {}, false);
     this.engine.runRenderLoop(this.onUpdate.bind(this));
+
+    this.scene = new Scene(this.engine);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.client = new Client(SERVER_HOST);
@@ -56,10 +61,10 @@ export class Game implements IDisposable {
   }
 
   private onUpdate() {
-    this.scene?.render();
+    this.scene.render();
   }
 
-  private sendSetTransformMessage() {
+  private sendSetTransform() {
     const message: SetTransform.Message = {
       x: 0,
       y: 0,
@@ -69,17 +74,24 @@ export class Game implements IDisposable {
     this.room?.sendUnreliable(SetTransform.Type, message);
   }
 
-  private onCharacterAdd(character: CharacterState, sessionId: string) {
-    console.log("[Nova Trials]", "Character added", character.name, sessionId);
+  private onCharacterAdd(state: CharacterState, index: string) {
+    console.log("[Nova Trials]", "Character added", state.name, index);
+
+    const character = new Character(this.scene);
+    character.fromState(state);
+
+    this.characters[index] = character;
+
+    if (index !== this.room?.sessionId) {
+      new CharacterView(character, this.scene);
+    }
   }
 
-  private onCharacterRemove(character: CharacterState, sessionId: string) {
-    console.log(
-      "[Nova Trials]",
-      "Character removed",
-      character.name,
-      sessionId
-    );
+  private onCharacterRemove(state: CharacterState, index: string) {
+    console.log("[Nova Trials]", "Character removed", state.name, index);
+
+    this.characters[index].dispose();
+    delete this.characters[index];
   }
 
   private onError(code: number, message?: string) {
@@ -117,5 +129,12 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Resizing renderer");
 
     this.engine.resize();
+  }
+
+  get localCharacter() {
+    if (!this.room) {
+      return undefined;
+    }
+    return this.characters[this.room.sessionId];
   }
 }

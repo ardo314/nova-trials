@@ -2,6 +2,7 @@ import { MapSchema, Schema, type } from "@colyseus/schema";
 
 export const ROOM_NAME = "game";
 export const DEFAULT_CHARACTER_NAME = "Player";
+export const SEND_RATE = 20;
 
 export type JoinOptions = {
   name?: string;
