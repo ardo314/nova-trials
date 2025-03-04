@@ -1,9 +1,12 @@
 import {
+  ArcRotateCamera,
   DeviceSourceManager,
   Engine,
   HavokPlugin,
+  HemisphericLight,
   IDisposable,
   Scene,
+  Vector3,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import {
@@ -12,6 +15,7 @@ import {
   GameState,
   JoinOptions,
   ROOM_NAME,
+  SEND_DELTA_TIME,
   SetTransform,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
@@ -27,6 +31,8 @@ export class Game implements IDisposable {
   private havokPlugin: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   private readonly characters: Record<string, Character> = {};
+  private readonly characterViews: Record<string, CharacterView> = {};
+  private sendTime = 0;
   scene: Scene;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
@@ -36,6 +42,18 @@ export class Game implements IDisposable {
     this.engine.runRenderLoop(this.onUpdate.bind(this));
 
     this.scene = new Scene(this.engine);
+
+    const camera = new ArcRotateCamera(
+      "camera",
+      -Math.PI / 2,
+      Math.PI / 2.5,
+      3,
+      new Vector3(0, 1, -10),
+      this.scene
+    );
+    camera.attachControl(this.engine.getRenderingCanvas(), true);
+
+    new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.client = new Client(SERVER_HOST);
@@ -61,6 +79,14 @@ export class Game implements IDisposable {
   }
 
   private onUpdate() {
+    if (this.localCharacter) {
+      this.sendTime += this.engine.getDeltaTime();
+      if (this.sendTime >= SEND_DELTA_TIME) {
+        this.sendSetTransform();
+        this.sendTime -= SEND_DELTA_TIME;
+      }
+    }
+
     this.scene.render();
   }
 
@@ -71,7 +97,7 @@ export class Game implements IDisposable {
       z: 0,
     };
 
-    this.room?.sendUnreliable(SetTransform.Type, message);
+    this.room?.send(SetTransform.Type, message);
   }
 
   private onCharacterAdd(state: CharacterState, index: string) {
@@ -83,7 +109,8 @@ export class Game implements IDisposable {
     this.characters[index] = character;
 
     if (index !== this.room?.sessionId) {
-      new CharacterView(character, this.scene);
+      const view = new CharacterView(character, this.scene);
+      this.characterViews[index] = view;
     }
   }
 
@@ -92,6 +119,10 @@ export class Game implements IDisposable {
 
     this.characters[index].dispose();
     delete this.characters[index];
+
+    const view = this.characterViews[index];
+    view?.dispose();
+    delete this.characterViews[index];
   }
 
   private onError(code: number, message?: string) {
