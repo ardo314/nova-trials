@@ -1,0 +1,10 @@
+{
+  "name": "@nova-trials/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc --build"
+  }
+}

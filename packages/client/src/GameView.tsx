@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Game } from "./game";
+import { Game } from "./game/game";
 import { Inspector } from "@babylonjs/inspector";
 
 export function GameView() {
