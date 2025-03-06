@@ -21,6 +21,7 @@ import {
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { Character } from "./character";
 import { CharacterView } from "./characterView";
+import { CharacterController } from "./characterController";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -32,6 +33,7 @@ export class Game implements IDisposable {
   private room: Room<GameState> | null = null;
   private readonly characters: Record<string, Character> = {};
   private readonly characterViews: Record<string, CharacterView> = {};
+  private characterController: CharacterController | null = null;
   private sendTime = 0;
   scene: Scene;
 
@@ -79,22 +81,31 @@ export class Game implements IDisposable {
   }
 
   private onUpdate() {
-    if (this.localCharacter) {
-      this.sendTime += this.engine.getDeltaTime();
-      if (this.sendTime >= SEND_DELTA_TIME) {
-        this.sendSetTransform();
-        this.sendTime -= SEND_DELTA_TIME;
-      }
+    this.characterController?.update(this.engine.getDeltaTime());
+
+    this.sendTime += this.engine.getDeltaTime();
+    if (this.sendTime >= SEND_DELTA_TIME) {
+      this.sendSetTransform();
+      this.sendTime -= SEND_DELTA_TIME;
+    }
+
+    for (const view of Object.values(this.characterViews)) {
+      view.update();
     }
 
     this.scene.render();
   }
 
   private sendSetTransform() {
+    if (!this.localCharacter) {
+      return;
+    }
+
+    const position = this.localCharacter.node.position;
     const message: SetTransform.Message = {
-      x: 0,
-      y: 0,
-      z: 0,
+      x: position.x,
+      y: position.y,
+      z: position.z,
     };
 
     this.room?.send(SetTransform.Type, message);
@@ -108,7 +119,15 @@ export class Game implements IDisposable {
 
     this.characters[index] = character;
 
-    if (index !== this.room?.sessionId) {
+    if (index === this.room?.sessionId) {
+      this.characterController = new CharacterController(
+        this.deviceSourceManager,
+        character
+      );
+    } else {
+      const $ = getStateCallbacks(this.room!);
+      $(state).position.onChange(() => character.fromState(state));
+
       const view = new CharacterView(character, this.scene);
       this.characterViews[index] = view;
     }
@@ -120,8 +139,7 @@ export class Game implements IDisposable {
     this.characters[index].dispose();
     delete this.characters[index];
 
-    const view = this.characterViews[index];
-    view?.dispose();
+    this.characterViews[index]?.dispose();
     delete this.characterViews[index];
   }
 

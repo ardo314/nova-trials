@@ -6,6 +6,7 @@ import {
   Vector3,
 } from "@babylonjs/core";
 import { CharacterState } from "@nova-trials/shared";
+import { CharacterView } from "./characterView";
 
 export interface CharacterInput {
   forward: number;
