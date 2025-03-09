@@ -10,9 +10,10 @@
     "build": "tsc --build --verbose"
   },
   "dependencies": {
-    "@babylonjs/core": "^7.47.2",
+    "@babylonjs/core": "^7.52.2",
     "@babylonjs/havok": "^1.3.10",
-    "@babylonjs/inspector": "^7.47.2",
+    "@babylonjs/inspector": "^7.52.2",
+    "@babylonjs/loaders": "^7.52.2",
     "@colyseus/schema": "^3.0.10"
   },
   "devDependencies": {

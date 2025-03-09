@@ -14,11 +14,10 @@ export class SpawnRoom {
     console.log("[Nova Trials]", "Loading spawn room");
 
     this.container = await LoadAssetContainerAsync(
-      "spawn-room.glb",
+      "http://localhost:3000/spawn-room.glb",
       this.scene
     );
     this.container.addAllToScene();
-    console.log(this.container.getNodes());
   }
 
   unload() {

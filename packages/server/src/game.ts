@@ -8,6 +8,7 @@ import {
   SpawnRoom,
 } from "@nova-trials/shared";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
+import "@babylonjs/loaders/glTF";
 
 export class Game extends Room<GameState> {
   private readonly engine: Engine;
@@ -28,8 +29,6 @@ export class Game extends Room<GameState> {
     console.log("room created!");
 
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
-
-    await this.spawnRoom.load();
   }
 
   onJoin(client: Client, options: JoinOptions) {
