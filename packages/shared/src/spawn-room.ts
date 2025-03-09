@@ -18,6 +18,7 @@ export class SpawnRoom {
       this.scene
     );
     this.container.addAllToScene();
+    console.log(this.container.getNodes());
   }
 
   unload() {

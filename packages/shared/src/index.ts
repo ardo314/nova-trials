@@ -1,5 +1,7 @@
 import { MapSchema, Schema, type } from "@colyseus/schema";
 
+export * from "./spawn-room";
+
 export const ROOM_NAME = "game";
 export const DEFAULT_CHARACTER_NAME = "Player";
 export const SEND_RATE = 1;

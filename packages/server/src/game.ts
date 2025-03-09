@@ -5,15 +5,31 @@ import {
   GameState,
   JoinOptions,
   SetTransform,
+  SpawnRoom,
 } from "@nova-trials/shared";
+import { Engine, NullEngine, Scene } from "@babylonjs/core";
 
 export class Game extends Room<GameState> {
+  private readonly engine: Engine;
+  private readonly scene: Scene;
+  private spawnRoom: SpawnRoom;
+
   state = new GameState();
 
-  onCreate(options: any): void | Promise<any> {
+  constructor() {
+    super();
+
+    this.engine = new NullEngine();
+    this.scene = new Scene(this.engine);
+    this.spawnRoom = new SpawnRoom(this.scene);
+  }
+
+  async onCreate(options: any) {
     console.log("room created!");
 
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
+
+    await this.spawnRoom.load();
   }
 
   onJoin(client: Client, options: JoinOptions) {

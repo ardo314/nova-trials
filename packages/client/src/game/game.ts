@@ -23,7 +23,7 @@ import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { Character } from "./character";
 import { CharacterView } from "./characterView";
 import { CharacterController } from "./characterController";
-import { SpawnRoom } from "./scenes/spawn-room";
+import { SpawnRoom } from "@nova-trials/shared/src/spawn-room";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -38,7 +38,7 @@ export class Game implements IDisposable {
   private characterController: CharacterController | null = null;
   private sendTime = 0;
   readonly scene: Scene;
-  spawnRoom: SpawnRoom;
+  readonly spawnRoom: SpawnRoom;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
@@ -83,10 +83,6 @@ export class Game implements IDisposable {
     await this.loadHavokPhysics();
     await this.join();
     await this.spawnRoom.load();
-
-    this.spawnRoom.spawns.forEach((spawn, index) => {
-      console.log(spawn.name);
-    });
   }
 
   private onUpdate() {
