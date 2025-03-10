@@ -3,6 +3,7 @@ import {
   CharacterState,
   DEFAULT_CHARACTER_NAME,
   GameState,
+  getRandomElement,
   JoinOptions,
   SetTransform,
   SpawnRoom,
@@ -13,7 +14,8 @@ import "@babylonjs/loaders/glTF";
 export class Game extends Room<GameState> {
   private readonly engine: Engine;
   private readonly scene: Scene;
-  private spawnRoom: SpawnRoom;
+  private readonly spawnRoom: SpawnRoom;
+  private map: object;
 
   state = new GameState();
 
@@ -38,6 +40,9 @@ export class Game extends Room<GameState> {
 
     const state = new CharacterState();
     state.name = options.name ?? DEFAULT_CHARACTER_NAME;
+    state.position.assign(
+      getRandomElement(this.spawnRoom.spawns).getAbsolutePosition()
+    );
 
     this.state.characters.set(client.sessionId, state);
   }
