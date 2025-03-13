@@ -1,12 +1,11 @@
 import {
-  AppendSceneAsync,
-  ArcRotateCamera,
   DeviceSourceManager,
   Engine,
   HavokPlugin,
   HemisphericLight,
   IDisposable,
   Scene,
+  UniversalCamera,
   Vector3,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
@@ -49,16 +48,7 @@ export class Game implements IDisposable {
     this.scene = new Scene(this.engine);
     this.spawnRoom = new SpawnRoom(this.scene);
 
-    const camera = new ArcRotateCamera(
-      "camera",
-      -Math.PI / 2,
-      Math.PI / 2.5,
-      3,
-      new Vector3(0, 1, -10),
-      this.scene
-    );
-    camera.attachControl(this.engine.getRenderingCanvas(), true);
-
+    new UniversalCamera("camera", new Vector3(0, 2, -10), this.scene);
     new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
@@ -92,6 +82,12 @@ export class Game implements IDisposable {
     if (this.sendTime >= SEND_DELTA_TIME) {
       this.sendSetTransform();
       this.sendTime -= SEND_DELTA_TIME;
+    }
+
+    if (this.localCharacter) {
+      this.scene.activeCamera?.position.copyFrom(
+        this.localCharacter.headNode.getAbsolutePosition()
+      );
     }
 
     for (const view of Object.values(this.characterViews)) {
