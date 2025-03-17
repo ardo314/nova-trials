@@ -19,5 +19,6 @@ export class CharacterState extends Schema {
 }
 
 export class GameState extends Schema {
+  @type("string") level: string = "";
   @type({ map: CharacterState }) characters = new MapSchema<CharacterState>();
 }

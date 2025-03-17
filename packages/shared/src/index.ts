@@ -1,8 +1,7 @@
 export * from "./spawn-room";
 export * from "./messages";
 export * from "./state";
-export * from "./levels/level";
-export * from "./levels/red-light-green-light-level";
+export * from "./levels";
 
 export const ROOM_NAME = "game";
 export const DEFAULT_CHARACTER_NAME = "Player";

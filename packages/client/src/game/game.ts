@@ -11,9 +11,11 @@ import {
 import HavokPhysics from "@babylonjs/havok";
 import {
   CharacterState,
+  createLevel,
   DEFAULT_CHARACTER_NAME,
   GameState,
   JoinOptions,
+  LevelName,
   ROOM_NAME,
   SEND_DELTA_TIME,
   SetTransform,
@@ -38,7 +40,7 @@ export class Game implements IDisposable {
   private sendTime = 0;
   readonly scene: Scene;
   readonly spawnRoom: SpawnRoom;
-  level: Level;
+  level: Level | null = null;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
@@ -48,7 +50,6 @@ export class Game implements IDisposable {
 
     this.scene = new Scene(this.engine);
     this.spawnRoom = new SpawnRoom(this.scene);
-    this.level = new RedLightGreenLightLevel(this.scene);
 
     new UniversalCamera("camera", new Vector3(0, 2, -10), this.scene);
 
@@ -74,7 +75,6 @@ export class Game implements IDisposable {
     await this.loadHavokPhysics();
     await this.join();
     await this.spawnRoom.load();
-    await this.level.load();
   }
 
   private onUpdate() {
@@ -146,6 +146,13 @@ export class Game implements IDisposable {
     delete this.characterViews[index];
   }
 
+  private async onLevelChange(level: string) {
+    this.level?.dispose();
+
+    this.level = createLevel(level as LevelName, this.scene);
+    await this.level.load();
+  }
+
   private onError(code: number, message?: string) {
     console.error("[Nova Trials]", "Error", code, message);
   }
@@ -167,6 +174,8 @@ export class Game implements IDisposable {
     this.room.onLeave(this.onLeave.bind(this));
 
     const $ = getStateCallbacks(this.room);
+
+    $(this.room.state).listen("level", this.onLevelChange.bind(this));
     $(this.room.state).characters.onAdd(this.onCharacterAdd.bind(this));
     $(this.room.state).characters.onRemove(this.onCharacterRemove.bind(this));
   }
