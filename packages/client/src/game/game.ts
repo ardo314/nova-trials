@@ -22,7 +22,7 @@ import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { Character } from "./character";
 import { CharacterView } from "./characterView";
 import { CharacterController } from "./characterController";
-import { SpawnRoom } from "@nova-trials/shared/src/spawn-room";
+import { SpawnRoom, Level, RedLightGreenLightLevel } from "@nova-trials/shared";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -38,6 +38,7 @@ export class Game implements IDisposable {
   private sendTime = 0;
   readonly scene: Scene;
   readonly spawnRoom: SpawnRoom;
+  level: Level;
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
@@ -47,9 +48,9 @@ export class Game implements IDisposable {
 
     this.scene = new Scene(this.engine);
     this.spawnRoom = new SpawnRoom(this.scene);
+    this.level = new RedLightGreenLightLevel(this.scene);
 
     new UniversalCamera("camera", new Vector3(0, 2, -10), this.scene);
-    new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.client = new Client(SERVER_HOST);
@@ -73,6 +74,7 @@ export class Game implements IDisposable {
     await this.loadHavokPhysics();
     await this.join();
     await this.spawnRoom.load();
+    await this.level.load();
   }
 
   private onUpdate() {

@@ -20,7 +20,7 @@ export class SpawnRoom {
     this.container.addAllToScene();
   }
 
-  unload() {
+  dispose() {
     this.container?.removeAllFromScene();
     this.container?.dispose();
   }
