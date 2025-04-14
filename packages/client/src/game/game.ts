@@ -22,8 +22,8 @@ import {
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { Character } from "./character";
-import { CharacterView } from "./characterView";
-import { CharacterController } from "./characterController";
+import { CharacterView } from "./character/character-view";
+import { CharacterInputSystem } from "./character/character-input-system";
 import { SpawnRoom, Level, RedLightGreenLightLevel } from "@nova-trials/shared";
 
 const SERVER_HOST = "http://localhost:2567";
@@ -36,8 +36,6 @@ export class Game implements IDisposable {
   private room: Room<GameState> | null = null;
   private readonly characters: Record<string, Character> = {};
   private readonly characterViews: Record<string, CharacterView> = {};
-  private characterController: CharacterController | null = null;
-  private sendTime = 0;
   readonly scene: Scene;
   readonly spawnRoom: SpawnRoom;
   level: Level | null = null;
@@ -78,12 +76,12 @@ export class Game implements IDisposable {
   }
 
   private onUpdate() {
-    this.characterController?.update(this.engine.getDeltaTime());
+    for (const character of Object.values(this.characters)) {
+      character.update();
+    }
 
-    this.sendTime += this.engine.getDeltaTime();
-    if (this.sendTime >= SEND_DELTA_TIME) {
-      this.sendSetTransform();
-      this.sendTime -= SEND_DELTA_TIME;
+    for (const view of Object.values(this.characterViews)) {
+      view.update();
     }
 
     if (this.localCharacter) {
@@ -92,26 +90,7 @@ export class Game implements IDisposable {
       );
     }
 
-    for (const view of Object.values(this.characterViews)) {
-      view.update();
-    }
-
     this.scene.render();
-  }
-
-  private sendSetTransform() {
-    if (!this.localCharacter) {
-      return;
-    }
-
-    const position = this.localCharacter.node.position;
-    const message: SetTransform.Message = {
-      x: position.x,
-      y: position.y,
-      z: position.z,
-    };
-
-    this.room?.send(SetTransform.Type, message);
   }
 
   private onCharacterAdd(state: CharacterState, index: string) {
@@ -123,7 +102,7 @@ export class Game implements IDisposable {
     this.characters[index] = character;
 
     if (index === this.room?.sessionId) {
-      this.characterController = new CharacterController(
+      this.characterController = new CharacterInputSystem(
         this.deviceSourceManager,
         character
       );

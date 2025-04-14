@@ -5,7 +5,7 @@ import {
   Scene,
   TransformNode,
 } from "@babylonjs/core";
-import { Character } from "./character";
+import { Character } from ".";
 
 export class CharacterView implements IDisposable {
   private readonly node: TransformNode;
@@ -27,7 +27,7 @@ export class CharacterView implements IDisposable {
     this.node.rotation.copyFrom(this.character.node.rotation);
   }
 
-  dispose(): void {
+  dispose() {
     this.node.dispose();
     this.mesh.dispose();
   }

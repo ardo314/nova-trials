@@ -1,25 +1,26 @@
 import {
   DeviceSourceManager,
   DeviceType,
-  float,
   IDisposable,
   IKeyboardEvent,
   Observer,
 } from "@babylonjs/core";
-import { Character, CharacterInput } from "./character";
+import { CharacterInput } from ".";
 import { DeviceSourceType } from "@babylonjs/core/DeviceInput/internalDeviceSourceManager";
 
-export class CharacterController implements IDisposable {
+export class CharacterInputSystem implements IDisposable {
   private readonly deviceConnectedObserver: Observer<DeviceSourceType>;
   private readonly deviceDisconnectedObserver: Observer<DeviceSourceType>;
   private keyboardInputObserver: Observer<IKeyboardEvent> | null = null;
 
-  private input: CharacterInput = {
-    forward: 0,
-    right: 0,
+  private keys = {
+    w: false,
+    a: false,
+    s: false,
+    d: false,
   };
 
-  constructor(dsm: DeviceSourceManager, private character: Character) {
+  constructor(dsm: DeviceSourceManager) {
     const keyboard = dsm.getDeviceSource(DeviceType.Keyboard);
 
     if (keyboard) {
@@ -32,6 +33,12 @@ export class CharacterController implements IDisposable {
     this.deviceDisconnectedObserver = dsm.onDeviceDisconnectedObservable.add(
       this.onDeviceDisconnected.bind(this)
     );
+  }
+
+  dispose() {
+    this.deviceConnectedObserver.remove();
+    this.deviceDisconnectedObserver.remove();
+    this.keyboardInputObserver?.remove();
   }
 
   private onDeviceConnected(ev: DeviceSourceType) {
@@ -56,27 +63,39 @@ export class CharacterController implements IDisposable {
   private onKeyboardInputChanged(ev: IKeyboardEvent) {
     switch (ev.key) {
       case "w":
-        this.input.forward = ev.type === "keydown" ? 1 : 0;
+        this.keys.w = ev.type === "keydown";
         break;
       case "s":
-        this.input.forward = ev.type === "keydown" ? -1 : 0;
+        this.keys.a = ev.type === "keydown";
         break;
       case "a":
-        this.input.right = ev.type === "keydown" ? -1 : 0;
+        this.keys.s = ev.type === "keydown";
         break;
       case "d":
-        this.input.right = ev.type === "keydown" ? 1 : 0;
+        this.keys.d = ev.type === "keydown";
         break;
     }
   }
 
-  update(dt: float): void {
-    this.character.simulate(this.input, dt);
-  }
+  execute(): CharacterInput {
+    const input: CharacterInput = {
+      forward: 0,
+      right: 0,
+    };
 
-  dispose(): void {
-    this.deviceConnectedObserver.remove();
-    this.deviceDisconnectedObserver.remove();
-    this.keyboardInputObserver?.remove();
+    if (this.keys.w) {
+      input.forward += 1;
+    }
+    if (this.keys.s) {
+      input.forward -= 1;
+    }
+    if (this.keys.a) {
+      input.right -= 1;
+    }
+    if (this.keys.d) {
+      input.right += 1;
+    }
+
+    return input;
   }
 }
