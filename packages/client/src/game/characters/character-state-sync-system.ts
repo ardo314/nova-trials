@@ -20,11 +20,11 @@ export class CharacterStateSyncSystem implements IDisposable {
     });
 
     this.detachRotationListener = proxy(state).rotation.onChange(() => {
-      this.body.rotation.copyFromFloats(
-        state.position.x,
-        state.position.y,
-        state.position.z
-      );
+      // this.body.rotation.copyFromFloats(
+      //   state.position.x,
+      //   state.position.y,
+      //   state.position.z
+      // );
     });
   }
 
