@@ -16,25 +16,17 @@ export interface CharacterInput {
 }
 
 export class Character implements IDisposable {
-  readonly node: TransformNode;
-  readonly headNode: TransformNode;
-
   private constructor(
-    scene: Scene,
+    readonly body: TransformNode,
+    readonly head: TransformNode,
     private readonly inputSystem?: CharacterInputSystem,
     private readonly movementSystem?: CharacterMovementSystem,
     private readonly sendSystem?: CharacterSendSystem,
     private readonly stateSyncSystem?: CharacterStateSyncSystem
-  ) {
-    this.node = new TransformNode("character", scene);
-
-    this.headNode = new TransformNode("head", scene);
-    this.headNode.setParent(this.node);
-    this.headNode.position.y = 1.5;
-  }
+  ) {}
 
   dispose() {
-    this.node.dispose();
+    this.body.dispose();
     this.inputSystem?.dispose();
     this.stateSyncSystem?.dispose();
   }
@@ -42,39 +34,56 @@ export class Character implements IDisposable {
   update() {
     if (this.inputSystem && this.movementSystem && this.sendSystem) {
       const input = this.inputSystem.execute();
-      this.movementSystem.execute(input, this.node);
-      this.sendSystem.execute(this.node);
+      this.movementSystem.execute(input);
+      this.sendSystem.execute(this.body);
     }
   }
 
+  get isLocal(): boolean {
+    return (
+      this.inputSystem !== undefined &&
+      this.movementSystem !== undefined &&
+      this.sendSystem !== undefined
+    );
+  }
+
+  get isRemote(): boolean {
+    return this.stateSyncSystem !== undefined;
+  }
+
   static Builder = class {
-    private readonly scene: Scene;
+    private readonly body: TransformNode;
+    private readonly head: TransformNode;
 
     private inputSystem?: CharacterInputSystem;
     private movementSystem?: CharacterMovementSystem;
     private sendSystem?: CharacterSendSystem;
     private stateSyncSystem?: CharacterStateSyncSystem;
 
-    constructor(scene: Scene) {
-      this.scene = scene;
+    constructor(private readonly scene: Scene) {
+      this.body = new TransformNode("character", this.scene);
+      this.head = new TransformNode("head", this.scene);
+      this.head.setParent(this.body);
+      this.head.position.y = 1.5;
     }
 
     withControls(dsm: DeviceSourceManager, room: Room): this {
       const engine = this.scene.getEngine();
       this.inputSystem = new CharacterInputSystem(dsm);
-      this.movementSystem = new CharacterMovementSystem(engine);
+      this.movementSystem = new CharacterMovementSystem(engine, this.body);
       this.sendSystem = new CharacterSendSystem(engine, room);
       return this;
     }
 
     withStateSync(): this {
-      this.stateSyncSystem = new CharacterStateSyncSystem();
+      this.stateSyncSystem = new CharacterStateSyncSystem(this.body);
       return this;
     }
 
     build(): Character {
       const character = new Character(
-        this.scene,
+        this.body,
+        this.head,
         this.inputSystem,
         this.movementSystem,
         this.sendSystem,

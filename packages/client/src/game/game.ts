@@ -2,7 +2,6 @@ import {
   DeviceSourceManager,
   Engine,
   HavokPlugin,
-  HemisphericLight,
   IDisposable,
   Scene,
   UniversalCamera,
@@ -17,14 +16,11 @@ import {
   JoinOptions,
   LevelName,
   ROOM_NAME,
-  SEND_DELTA_TIME,
-  SetTransform,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
-import { Character } from "./character";
-import { CharacterView } from "./character/character-view";
-import { CharacterInputSystem } from "./character/character-input-system";
-import { SpawnRoom, Level, RedLightGreenLightLevel } from "@nova-trials/shared";
+import { SpawnRoom, Level } from "@nova-trials/shared";
+import { Character } from "./characters";
+import { CharacterView } from "./characters/character-view";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -44,7 +40,7 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Initializing game");
 
     this.engine = new Engine(canvas, true, {}, false);
-    this.engine.runRenderLoop(this.onUpdate.bind(this));
+    this.engine.runRenderLoop(this.update.bind(this));
 
     this.scene = new Scene(this.engine);
     this.spawnRoom = new SpawnRoom(this.scene);
@@ -75,7 +71,7 @@ export class Game implements IDisposable {
     await this.spawnRoom.load();
   }
 
-  private onUpdate() {
+  private update() {
     for (const character of Object.values(this.characters)) {
       character.update();
     }
@@ -86,7 +82,7 @@ export class Game implements IDisposable {
 
     if (this.localCharacter) {
       this.scene.activeCamera?.position.copyFrom(
-        this.localCharacter.headNode.getAbsolutePosition()
+        this.localCharacter.head.getAbsolutePosition()
       );
     }
 
@@ -96,22 +92,22 @@ export class Game implements IDisposable {
   private onCharacterAdd(state: CharacterState, index: string) {
     console.log("[Nova Trials]", "Character added", state.name, index);
 
-    const character = new Character(this.scene);
-    character.fromState(state);
-
-    this.characters[index] = character;
+    const characterBuilder = new Character.Builder(this.scene);
 
     if (index === this.room?.sessionId) {
-      this.characterController = new CharacterInputSystem(
-        this.deviceSourceManager,
-        character
-      );
+      characterBuilder.withControls(this.deviceSourceManager, this.room);
     } else {
-      const $ = getStateCallbacks(this.room!);
-      $(state).position.onChange(() => character.fromState(state));
+      characterBuilder.withStateSync();
+    }
 
-      const view = new CharacterView(character, this.scene);
-      this.characterViews[index] = view;
+    const character = characterBuilder.build();
+    this.characters[index] = character;
+
+    if (character.isRemote) {
+      this.characterViews[index] = new CharacterView.Builder(
+        this.scene,
+        character
+      ).build();
     }
   }
 
