@@ -65,10 +65,10 @@ export class CharacterInputSystem implements IDisposable {
       case "w":
         this.keys.w = ev.type === "keydown";
         break;
-      case "s":
+      case "a":
         this.keys.a = ev.type === "keydown";
         break;
-      case "a":
+      case "s":
         this.keys.s = ev.type === "keydown";
         break;
       case "d":
