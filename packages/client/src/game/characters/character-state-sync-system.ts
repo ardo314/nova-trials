@@ -12,11 +12,19 @@ export class CharacterStateSyncSystem implements IDisposable {
     proxy: GetCallbackProxy
   ) {
     this.detachPositionListener = proxy(state).position.onChange(() => {
-      this.body.position.copyFromFloats(x, y, z);
+      this.body.position.copyFromFloats(
+        state.position.x,
+        state.position.y,
+        state.position.z
+      );
     });
 
     this.detachRotationListener = proxy(state).rotation.onChange(() => {
-      this.body.rotation.copyFromFloats(x, y, z);
+      this.body.rotation.copyFromFloats(
+        state.position.x,
+        state.position.y,
+        state.position.z
+      );
     });
   }
 

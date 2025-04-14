@@ -29,6 +29,7 @@ export class Character implements IDisposable {
   dispose() {
     this.body.dispose();
     this.inputSystem?.dispose();
+    this.stateSyncSystem?.dispose();
   }
 
   update() {
