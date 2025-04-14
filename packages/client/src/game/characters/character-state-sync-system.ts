@@ -1,19 +1,27 @@
 import { IDisposable, TransformNode } from "@babylonjs/core";
+import { GetCallbackProxy } from "@colyseus/schema";
 import { CharacterState } from "@nova-trials/shared";
 
 export class CharacterStateSyncSystem implements IDisposable {
-  constructor(private readonly body: TransformNode) {
-    const $ = getStateCallbacks(this.room!);
-    const foo = $(state);
-    foo.position.onChange(() => character.fromState(state));
+  private readonly detachPositionListener: () => void;
+  private readonly detachRotationListener: () => void;
+
+  constructor(
+    private readonly body: TransformNode,
+    state: CharacterState,
+    proxy: GetCallbackProxy
+  ) {
+    this.detachPositionListener = proxy(state).position.onChange(() => {
+      this.body.position.copyFromFloats(x, y, z);
+    });
+
+    this.detachRotationListener = proxy(state).rotation.onChange(() => {
+      this.body.rotation.copyFromFloats(x, y, z);
+    });
   }
 
-  dispose() {}
-
-  execute(state: CharacterState) {
-    const { x, y, z } = state.position;
-    const { x: rx, y: ry, z: rz } = state.rotation;
-    this.body.position.copyFromFloats(x, y, z);
-    this.body.rotation.copyFromFloats(rx, ry, rz);
+  dispose() {
+    this.detachPositionListener();
+    this.detachRotationListener();
   }
 }

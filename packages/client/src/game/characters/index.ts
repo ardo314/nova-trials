@@ -8,7 +8,8 @@ import { CharacterInputSystem } from "./character-input-system";
 import { CharacterMovementSystem } from "./character-movement-system";
 import { CharacterStateSyncSystem } from "./character-state-sync-system";
 import { CharacterSendSystem } from "./character-send-system";
-import { Room } from "colyseus.js";
+import { getStateCallbacks, Room } from "colyseus.js";
+import { CharacterState } from "@nova-trials/shared";
 
 export interface CharacterInput {
   forward: number;
@@ -28,7 +29,6 @@ export class Character implements IDisposable {
   dispose() {
     this.body.dispose();
     this.inputSystem?.dispose();
-    this.stateSyncSystem?.dispose();
   }
 
   update() {
@@ -75,8 +75,12 @@ export class Character implements IDisposable {
       return this;
     }
 
-    withStateSync(): this {
-      this.stateSyncSystem = new CharacterStateSyncSystem(this.body);
+    withStateSync(room: Room, state: CharacterState): this {
+      this.stateSyncSystem = new CharacterStateSyncSystem(
+        this.body,
+        state,
+        getStateCallbacks(room)
+      );
       return this;
     }
 

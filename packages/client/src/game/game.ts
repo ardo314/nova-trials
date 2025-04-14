@@ -92,12 +92,17 @@ export class Game implements IDisposable {
   private onCharacterAdd(state: CharacterState, index: string) {
     console.log("[Nova Trials]", "Character added", state.name, index);
 
+    if (this.room === null) {
+      console.error("[Nova Trials]", "Room is null");
+      return;
+    }
+
     const characterBuilder = new Character.Builder(this.scene);
 
-    if (index === this.room?.sessionId) {
+    if (index === this.room.sessionId) {
       characterBuilder.withControls(this.deviceSourceManager, this.room);
     } else {
-      characterBuilder.withStateSync();
+      characterBuilder.withStateSync(this.room, state);
     }
 
     const character = characterBuilder.build();
