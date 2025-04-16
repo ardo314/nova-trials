@@ -7,17 +7,21 @@ export class CharacterSendSystem {
 
   constructor(
     private readonly engine: AbstractEngine,
-    private readonly room: Room
+    private readonly room: Room,
+    private readonly body: TransformNode,
+    private readonly head: TransformNode
   ) {}
 
-  execute(body: TransformNode) {
+  execute() {
     this.sendTime += this.engine.getDeltaTime();
     if (this.sendTime >= SEND_DELTA_TIME) {
-      const position = body.position;
+      const position = this.body.position;
       const message: SetTransform.Message = {
         x: position.x,
         y: position.y,
         z: position.z,
+        pitch: this.head.rotation.x,
+        yaw: this.body.rotation.y,
       };
 
       this.room.send(SetTransform.Type, message);

@@ -78,6 +78,8 @@ export class Game extends Room<GameState> {
       character.position.x = message.x;
       character.position.y = message.y;
       character.position.z = message.z;
+      character.rotation.x = message.pitch;
+      character.rotation.y = message.yaw;
     }
   }
 }

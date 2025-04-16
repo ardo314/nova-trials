@@ -39,7 +39,7 @@ export class Character implements IDisposable {
     if (this.inputSystem && this.movementSystem && this.sendSystem) {
       const input = this.inputSystem.execute();
       this.movementSystem.execute(input);
-      this.sendSystem.execute(this.body);
+      this.sendSystem.execute();
     }
   }
 
@@ -79,13 +79,19 @@ export class Character implements IDisposable {
         this.body,
         this.head
       );
-      this.sendSystem = new CharacterSendSystem(engine, room);
+      this.sendSystem = new CharacterSendSystem(
+        engine,
+        room,
+        this.body,
+        this.head
+      );
       return this;
     }
 
     withStateSync(room: Room, state: CharacterState): this {
       this.stateSyncSystem = new CharacterStateSyncSystem(
         this.body,
+        this.head,
         state,
         getStateCallbacks(room)
       );

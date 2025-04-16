@@ -1,6 +1,6 @@
 import { MapSchema, Schema, type } from "@colyseus/schema";
 
-export class PositionState extends Schema {
+export class Vector3State extends Schema {
   @type("number") x: number = 0;
   @type("number") y: number = 0;
   @type("number") z: number = 0;
@@ -9,12 +9,11 @@ export class PositionState extends Schema {
 export class RotationState extends Schema {
   @type("number") x: number = 0;
   @type("number") y: number = 0;
-  @type("number") z: number = 0;
 }
 
 export class CharacterState extends Schema {
   @type("string") name: string = "Player";
-  @type(PositionState) position: PositionState = new PositionState();
+  @type(Vector3State) position: Vector3State = new Vector3State();
   @type(RotationState) rotation: RotationState = new RotationState();
 }
 

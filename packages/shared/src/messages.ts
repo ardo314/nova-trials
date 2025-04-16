@@ -5,5 +5,7 @@ export namespace SetTransform {
     x: number;
     y: number;
     z: number;
+    pitch: number;
+    yaw: number;
   };
 }

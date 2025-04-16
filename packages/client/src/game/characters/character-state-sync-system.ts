@@ -8,6 +8,7 @@ export class CharacterStateSyncSystem implements IDisposable {
 
   constructor(
     private readonly body: TransformNode,
+    private readonly head: TransformNode,
     state: CharacterState,
     proxy: GetCallbackProxy
   ) {
@@ -20,11 +21,8 @@ export class CharacterStateSyncSystem implements IDisposable {
     });
 
     this.detachRotationListener = proxy(state).rotation.onChange(() => {
-      // this.body.rotation.copyFromFloats(
-      //   state.position.x,
-      //   state.position.y,
-      //   state.position.z
-      // );
+      this.body.rotation.y = state.rotation.y;
+      this.head.rotation.x = state.rotation.x;
     });
   }
 
