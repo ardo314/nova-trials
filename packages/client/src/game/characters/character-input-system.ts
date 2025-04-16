@@ -110,8 +110,8 @@ export class CharacterInputSystem implements IDisposable {
       forward: 0,
       right: 0,
 
-      pitch: this.pointer.y,
-      yaw: this.pointer.x,
+      pitch: this.pointer.y * 0.01,
+      yaw: this.pointer.x * 0.01,
     };
 
     this.pointer.x = 0;

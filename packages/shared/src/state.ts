@@ -6,6 +6,13 @@ export class Vector3State extends Schema {
   @type("number") z: number = 0;
 }
 
+export class QuaternionState extends Schema {
+  @type("number") x: number = 0;
+  @type("number") y: number = 0;
+  @type("number") z: number = 0;
+  @type("number") w: number = 0;
+}
+
 export class RotationState extends Schema {
   @type("number") x: number = 0;
   @type("number") y: number = 0;

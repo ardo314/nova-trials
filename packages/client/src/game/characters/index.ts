@@ -1,6 +1,7 @@
 import {
   DeviceSourceManager,
   IDisposable,
+  Quaternion,
   Scene,
   TransformNode,
 } from "@babylonjs/core";
@@ -66,9 +67,12 @@ export class Character implements IDisposable {
 
     constructor(private readonly scene: Scene) {
       this.body = new TransformNode("character", this.scene);
+      this.body.rotationQuaternion = Quaternion.Identity();
+
       this.head = new TransformNode("head", this.scene);
       this.head.setParent(this.body);
       this.head.position.y = 1.5;
+      this.head.rotationQuaternion = Quaternion.Identity();
     }
 
     withControls(dsm: DeviceSourceManager, room: Room): this {

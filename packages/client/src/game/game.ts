@@ -3,6 +3,7 @@ import {
   Engine,
   HavokPlugin,
   IDisposable,
+  Quaternion,
   Scene,
   UniversalCamera,
   Vector3,
@@ -28,10 +29,11 @@ export class Game implements IDisposable {
   private readonly engine: Engine;
   private readonly deviceSourceManager: DeviceSourceManager;
   private readonly client: Client;
-  private havokPlugin: HavokPlugin | null = null;
-  private room: Room<GameState> | null = null;
+  private readonly camera: UniversalCamera;
   private readonly characters: Record<string, Character> = {};
   private readonly characterViews: Record<string, CharacterView> = {};
+  private havokPlugin: HavokPlugin | null = null;
+  private room: Room<GameState> | null = null;
   readonly scene: Scene;
   readonly spawnRoom: SpawnRoom;
   level: Level | null = null;
@@ -45,7 +47,12 @@ export class Game implements IDisposable {
     this.scene = new Scene(this.engine);
     this.spawnRoom = new SpawnRoom(this.scene);
 
-    new UniversalCamera("camera", new Vector3(0, 2, -10), this.scene);
+    this.camera = new UniversalCamera(
+      "camera",
+      new Vector3(0, 2, -10),
+      this.scene
+    );
+    this.camera.rotationQuaternion = Quaternion.Identity();
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.client = new Client(SERVER_HOST);
@@ -81,8 +88,11 @@ export class Game implements IDisposable {
     }
 
     if (this.localCharacter) {
-      this.scene.activeCamera?.position.copyFrom(
+      this.camera.position.copyFrom(
         this.localCharacter.head.getAbsolutePosition()
+      );
+      this.camera.rotationQuaternion.copyFrom(
+        this.localCharacter.head.absoluteRotationQuaternion
       );
     }
 
