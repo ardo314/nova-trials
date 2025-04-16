@@ -14,6 +14,9 @@ import { CharacterState } from "@nova-trials/shared";
 export interface CharacterInput {
   forward: number;
   right: number;
+
+  pitch: number;
+  yaw: number;
 }
 
 export class Character implements IDisposable {

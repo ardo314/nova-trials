@@ -3,6 +3,8 @@ import {
   DeviceType,
   IDisposable,
   IKeyboardEvent,
+  IPointerEvent,
+  IWheelEvent,
   Observer,
 } from "@babylonjs/core";
 import { CharacterInput } from ".";
@@ -12,6 +14,8 @@ export class CharacterInputSystem implements IDisposable {
   private readonly deviceConnectedObserver: Observer<DeviceSourceType>;
   private readonly deviceDisconnectedObserver: Observer<DeviceSourceType>;
   private keyboardInputObserver: Observer<IKeyboardEvent> | null = null;
+  private mouseInputObserver: Observer<IWheelEvent | IPointerEvent> | null =
+    null;
 
   private keys = {
     w: false,
@@ -20,11 +24,21 @@ export class CharacterInputSystem implements IDisposable {
     d: false,
   };
 
+  private pointer = {
+    x: 0,
+    y: 0,
+  };
+
   constructor(dsm: DeviceSourceManager) {
     const keyboard = dsm.getDeviceSource(DeviceType.Keyboard);
+    const mouse = dsm.getDeviceSource(DeviceType.Mouse);
 
     if (keyboard) {
       this.onDeviceConnected(keyboard);
+    }
+
+    if (mouse) {
+      this.onDeviceConnected(mouse);
     }
 
     this.deviceConnectedObserver = dsm.onDeviceConnectedObservable.add(
@@ -39,6 +53,7 @@ export class CharacterInputSystem implements IDisposable {
     this.deviceConnectedObserver.remove();
     this.deviceDisconnectedObserver.remove();
     this.keyboardInputObserver?.remove();
+    this.mouseInputObserver?.remove();
   }
 
   private onDeviceConnected(ev: DeviceSourceType) {
@@ -48,6 +63,10 @@ export class CharacterInputSystem implements IDisposable {
           this.onKeyboardInputChanged.bind(this)
         );
         break;
+      case DeviceType.Mouse:
+        this.mouseInputObserver = ev.onInputChangedObservable.add(
+          this.onMouseInputChanged.bind(this)
+        );
     }
   }
 
@@ -56,6 +75,10 @@ export class CharacterInputSystem implements IDisposable {
       case DeviceType.Keyboard:
         this.keyboardInputObserver?.remove();
         this.keyboardInputObserver = null;
+        break;
+      case DeviceType.Mouse:
+        this.mouseInputObserver?.remove();
+        this.mouseInputObserver = null;
         break;
     }
   }
@@ -77,10 +100,15 @@ export class CharacterInputSystem implements IDisposable {
     }
   }
 
+  private onMouseInputChanged(ev: IWheelEvent | IPointerEvent) {}
+
   execute(): CharacterInput {
     const input: CharacterInput = {
       forward: 0,
       right: 0,
+
+      pitch: 0,
+      yaw: 0,
     };
 
     if (this.keys.w) {
