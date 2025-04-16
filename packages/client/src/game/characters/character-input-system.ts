@@ -100,16 +100,22 @@ export class CharacterInputSystem implements IDisposable {
     }
   }
 
-  private onMouseInputChanged(ev: IWheelEvent | IPointerEvent) {}
+  private onMouseInputChanged(ev: IWheelEvent | IPointerEvent) {
+    this.pointer.x += ev.movementX;
+    this.pointer.y += ev.movementY;
+  }
 
   execute(): CharacterInput {
     const input: CharacterInput = {
       forward: 0,
       right: 0,
 
-      pitch: 0,
-      yaw: 0,
+      pitch: this.pointer.y,
+      yaw: this.pointer.x,
     };
+
+    this.pointer.x = 0;
+    this.pointer.y = 0;
 
     if (this.keys.w) {
       input.forward += 1;

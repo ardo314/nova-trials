@@ -74,7 +74,11 @@ export class Character implements IDisposable {
     withControls(dsm: DeviceSourceManager, room: Room): this {
       const engine = this.scene.getEngine();
       this.inputSystem = new CharacterInputSystem(dsm);
-      this.movementSystem = new CharacterMovementSystem(engine, this.body);
+      this.movementSystem = new CharacterMovementSystem(
+        engine,
+        this.body,
+        this.head
+      );
       this.sendSystem = new CharacterSendSystem(engine, room);
       return this;
     }
