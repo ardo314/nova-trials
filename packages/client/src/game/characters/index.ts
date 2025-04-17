@@ -5,12 +5,13 @@ import {
   Scene,
   TransformNode,
 } from "@babylonjs/core";
-import { CharacterInputSystem } from "./character-input-system";
-import { CharacterMovementSystem } from "./character-movement-system";
-import { CharacterStateSyncSystem } from "./character-state-sync-system";
-import { CharacterSendSystem } from "./character-send-system";
+import { CharacterInputSystem } from "./systems/character-input-system";
+import { CharacterMovementSystem } from "./systems/character-movement-system";
+import { CharacterStateSyncSystem } from "./systems/character-state-sync-system";
+import { CharacterSendSystem } from "./systems/character-send-system";
 import { getStateCallbacks, Room } from "colyseus.js";
 import { CharacterState } from "@nova-trials/shared";
+import { CharacterRotation } from "./components/character-rotation";
 
 export interface CharacterInput {
   forward: number;
@@ -59,6 +60,7 @@ export class Character implements IDisposable {
   static Builder = class {
     private readonly body: TransformNode;
     private readonly head: TransformNode;
+    private readonly rotation: CharacterRotation;
 
     private inputSystem?: CharacterInputSystem;
     private movementSystem?: CharacterMovementSystem;
@@ -73,6 +75,8 @@ export class Character implements IDisposable {
       this.head.setParent(this.body);
       this.head.position.y = 1.5;
       this.head.rotationQuaternion = Quaternion.Identity();
+
+      this.rotation = new CharacterRotation(this.body, this.head);
     }
 
     withControls(dsm: DeviceSourceManager, room: Room): this {
@@ -87,7 +91,7 @@ export class Character implements IDisposable {
         engine,
         room,
         this.body,
-        this.head
+        this.rotation
       );
       return this;
     }
@@ -95,7 +99,7 @@ export class Character implements IDisposable {
     withStateSync(room: Room, state: CharacterState): this {
       this.stateSyncSystem = new CharacterStateSyncSystem(
         this.body,
-        this.head,
+        this.rotation,
         state,
         getStateCallbacks(room)
       );

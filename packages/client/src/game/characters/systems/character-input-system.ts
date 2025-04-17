@@ -7,7 +7,7 @@ import {
   IWheelEvent,
   Observer,
 } from "@babylonjs/core";
-import { CharacterInput } from ".";
+import { CharacterInput } from "..";
 import { DeviceSourceType } from "@babylonjs/core/DeviceInput/internalDeviceSourceManager";
 
 export class CharacterInputSystem implements IDisposable {

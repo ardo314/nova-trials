@@ -1,5 +1,5 @@
 import { AbstractEngine, Space, TransformNode, Vector3 } from "@babylonjs/core";
-import { CharacterInput } from ".";
+import { CharacterInput } from "..";
 
 const SPEED = 5 / 1000;
 

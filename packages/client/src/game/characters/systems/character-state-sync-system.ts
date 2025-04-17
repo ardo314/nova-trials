@@ -1,6 +1,7 @@
 import { IDisposable, TransformNode } from "@babylonjs/core";
 import { GetCallbackProxy } from "@colyseus/schema";
 import { CharacterState } from "@nova-trials/shared";
+import { CharacterRotation } from "../components/character-rotation";
 
 export class CharacterStateSyncSystem implements IDisposable {
   private readonly detachPositionListener: () => void;
@@ -8,7 +9,7 @@ export class CharacterStateSyncSystem implements IDisposable {
 
   constructor(
     private readonly body: TransformNode,
-    private readonly head: TransformNode,
+    private readonly rotation: CharacterRotation,
     state: CharacterState,
     proxy: GetCallbackProxy
   ) {
@@ -21,8 +22,8 @@ export class CharacterStateSyncSystem implements IDisposable {
     });
 
     this.detachRotationListener = proxy(state).rotation.onChange(() => {
-      this.body.rotation.y = state.rotation.y;
-      this.head.rotation.x = state.rotation.x;
+      this.rotation.yaw = state.rotation.y;
+      this.rotation.pitch = state.rotation.x;
     });
   }
 
