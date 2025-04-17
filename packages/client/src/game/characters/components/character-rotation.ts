@@ -28,6 +28,8 @@ export class CharacterRotation {
   }
 
   set pitch(value: number) {
+    value = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, value));
+
     this._pitch = value;
 
     Quaternion.RotationAxisToRef(
