@@ -22,8 +22,8 @@ export class CharacterStateSyncSystem implements IDisposable {
     });
 
     this.detachRotationListener = proxy(state).rotation.onChange(() => {
-      this.rotation.yaw = state.rotation.y;
-      this.rotation.pitch = state.rotation.x;
+      this.rotation.yaw = state.rotation.yaw;
+      this.rotation.pitch = state.rotation.pitch;
     });
   }
 

@@ -13,15 +13,16 @@ export class QuaternionState extends Schema {
   @type("number") w: number = 0;
 }
 
-export class RotationState extends Schema {
-  @type("number") x: number = 0;
-  @type("number") y: number = 0;
+export class CharacterRotationState extends Schema {
+  @type("number") pitch: number = 0;
+  @type("number") yaw: number = 0;
 }
 
 export class CharacterState extends Schema {
   @type("string") name: string = "Player";
   @type(Vector3State) position: Vector3State = new Vector3State();
-  @type(RotationState) rotation: RotationState = new RotationState();
+  @type(CharacterRotationState) rotation: CharacterRotationState =
+    new CharacterRotationState();
 }
 
 export class GameState extends Schema {
