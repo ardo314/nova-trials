@@ -85,7 +85,7 @@ export class Character implements IDisposable {
       this.movementSystem = new CharacterMovementSystem(
         engine,
         this.body,
-        this.head
+        this.rotation
       );
       this.sendSystem = new CharacterSendSystem(
         engine,
