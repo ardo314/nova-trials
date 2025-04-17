@@ -1,10 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Game } from "./game/game";
 import { Inspector } from "@babylonjs/inspector";
+import { PauseMenu } from "./ui/PauseMenu";
 
 export function GameView() {
   const gameRef = useRef<Game | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isPaused, setIsPaused] = useState(true);
 
   useEffect(() => {
     if (!canvasRef.current) {
@@ -19,7 +21,13 @@ export function GameView() {
     };
   }, []);
 
-  function toggleInspector() {
+  function onResumeClick() {
+    setIsPaused(false);
+  }
+
+  function onOptionsClick() {}
+
+  function onToggleInspectorClick() {
     if (!gameRef.current || !gameRef.current.scene) {
       return;
     }
@@ -46,9 +54,13 @@ export function GameView() {
           pointerEvents: "none",
         }}
       >
-        <button style={{ pointerEvents: "auto" }} onClick={toggleInspector}>
-          Toggle Inspector
-        </button>
+        {isPaused && (
+          <PauseMenu
+            onResumeClick={onResumeClick}
+            onOptionsClick={onOptionsClick}
+            onToggleInspectorClick={onToggleInspectorClick}
+          />
+        )}
       </div>
     </div>
   );
