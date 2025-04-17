@@ -8,6 +8,8 @@ export class CharacterViewSyncSystem {
 
   execute() {
     this.body.position.copyFrom(this.characterBody.position);
-    this.body.rotation.copyFrom(this.characterBody.rotation);
+    this.body.rotationQuaternion!.copyFrom(
+      this.characterBody.rotationQuaternion!
+    );
   }
 }

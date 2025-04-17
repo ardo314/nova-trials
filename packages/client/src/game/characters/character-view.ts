@@ -1,6 +1,7 @@
 import {
   IDisposable,
   MeshBuilder,
+  Quaternion,
   Scene,
   TransformNode,
 } from "@babylonjs/core";
@@ -27,6 +28,7 @@ export class CharacterView implements IDisposable {
 
     constructor(scene: Scene, character: Character) {
       this.body = new TransformNode("characterView", scene);
+      this.body.rotationQuaternion = Quaternion.Identity();
 
       const mesh = MeshBuilder.CreateBox(
         "box",
