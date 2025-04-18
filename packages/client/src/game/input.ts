@@ -25,23 +25,22 @@ export class Input implements IDisposable {
   >();
 
   constructor(dsm: DeviceSourceManager) {
-    const keyboard = dsm.getDeviceSource(DeviceType.Keyboard);
-    const mouse = dsm.getDeviceSource(DeviceType.Mouse);
-
-    if (keyboard) {
-      this.onDeviceConnected(keyboard);
-    }
-
-    if (mouse) {
-      this.onDeviceConnected(mouse);
-    }
-
     this.deviceConnectedObserver = dsm.onDeviceConnectedObservable.add(
       this.onDeviceConnected.bind(this)
     );
     this.deviceDisconnectedObserver = dsm.onDeviceDisconnectedObservable.add(
       this.onDeviceDisconnected.bind(this)
     );
+
+    const keyboard = dsm.getDeviceSource(DeviceType.Keyboard);
+    if (keyboard) {
+      this.onDeviceConnected(keyboard);
+    }
+
+    const mouse = dsm.getDeviceSource(DeviceType.Mouse);
+    if (mouse) {
+      this.onDeviceConnected(mouse);
+    }
   }
 
   dispose() {
