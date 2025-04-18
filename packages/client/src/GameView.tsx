@@ -14,6 +14,9 @@ export function GameView() {
     }
 
     gameRef.current = new Game(window, canvasRef.current);
+    gameRef.current.isPaused.add((paused) => {
+      setIsPaused(true);
+    });
     gameRef.current.start();
 
     return () => {

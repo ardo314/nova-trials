@@ -3,6 +3,9 @@ import {
   Engine,
   HavokPlugin,
   IDisposable,
+  IKeyboardEvent,
+  Observable,
+  Observer,
   Quaternion,
   Scene,
   UniversalCamera,
@@ -20,14 +23,17 @@ import {
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { SpawnRoom, Level } from "@nova-trials/shared";
-import { Character } from "./characters";
+import { Character } from "./characters/character";
 import { CharacterView } from "./characters/character-view";
+import { Input } from "./input";
 
 const SERVER_HOST = "http://localhost:2567";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
   private readonly deviceSourceManager: DeviceSourceManager;
+  private readonly input: Input;
+  private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly client: Client;
   private readonly camera: UniversalCamera;
   private readonly characters: Record<string, Character> = {};
@@ -37,6 +43,8 @@ export class Game implements IDisposable {
   readonly scene: Scene;
   readonly spawnRoom: SpawnRoom;
   level: Level | null = null;
+
+  readonly isPaused: Observable<boolean> = new Observable<boolean>();
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
@@ -55,9 +63,14 @@ export class Game implements IDisposable {
     this.camera.rotationQuaternion = Quaternion.Identity();
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
+    this.input = new Input(this.deviceSourceManager);
     this.client = new Client(SERVER_HOST);
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
+
+    this.keyboardInputObserver = this.input.keyboardInput.add(
+      this.onKeyboardInputChanged.bind(this)
+    );
   }
 
   dispose(): void {
@@ -65,6 +78,8 @@ export class Game implements IDisposable {
 
     this.engine.dispose();
     this.deviceSourceManager.dispose();
+    this.input.dispose();
+    this.keyboardInputObserver.remove();
     this.havokPlugin?.dispose();
     this.room?.leave();
     this.room?.removeAllListeners();
@@ -99,6 +114,14 @@ export class Game implements IDisposable {
     this.scene.render();
   }
 
+  private onKeyboardInputChanged(ev: IKeyboardEvent) {
+    switch (ev.key) {
+      case "Escape":
+        this.isPaused.notifyObservers(true);
+        break;
+    }
+  }
+
   private onCharacterAdd(state: CharacterState, index: string) {
     console.log("[Nova Trials]", "Character added", state.name, index);
 
@@ -110,7 +133,7 @@ export class Game implements IDisposable {
     const characterBuilder = new Character.Builder(this.scene);
 
     if (index === this.room.sessionId) {
-      characterBuilder.withControls(this.deviceSourceManager, this.room);
+      characterBuilder.withControls(this.input, this.room);
     } else {
       characterBuilder.withStateSync(this.room, state);
     }

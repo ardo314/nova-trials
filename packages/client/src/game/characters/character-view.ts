@@ -5,7 +5,7 @@ import {
   Scene,
   TransformNode,
 } from "@babylonjs/core";
-import { Character } from ".";
+import { Character } from "./character";
 import { CharacterViewSyncSystem } from "./systems/character-view-sync-system";
 
 export class CharacterView implements IDisposable {

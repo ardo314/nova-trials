@@ -1,6 +1,6 @@
 import { AbstractEngine, TransformNode, Vector3 } from "@babylonjs/core";
-import { CharacterInput } from "..";
 import { CharacterRotation } from "../components/character-rotation";
+import { CharacterInput } from "../types/character-input";
 
 const SPEED = 5 / 1000;
 

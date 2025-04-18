@@ -1,10 +1,4 @@
-import {
-  DeviceSourceManager,
-  IDisposable,
-  Quaternion,
-  Scene,
-  TransformNode,
-} from "@babylonjs/core";
+import { IDisposable, Quaternion, Scene, TransformNode } from "@babylonjs/core";
 import { CharacterInputSystem } from "./systems/character-input-system";
 import { CharacterMovementSystem } from "./systems/character-movement-system";
 import { CharacterStateSyncSystem } from "./systems/character-state-sync-system";
@@ -12,14 +6,7 @@ import { CharacterSendSystem } from "./systems/character-send-system";
 import { getStateCallbacks, Room } from "colyseus.js";
 import { CharacterState } from "@nova-trials/shared";
 import { CharacterRotation } from "./components/character-rotation";
-
-export interface CharacterInput {
-  forward: number;
-  right: number;
-
-  pitch: number;
-  yaw: number;
-}
+import { Input } from "../input";
 
 export class Character implements IDisposable {
   private constructor(
@@ -79,9 +66,9 @@ export class Character implements IDisposable {
       this.rotation = new CharacterRotation(this.body, this.head);
     }
 
-    withControls(dsm: DeviceSourceManager, room: Room): this {
+    withControls(input: Input, room: Room): this {
       const engine = this.scene.getEngine();
-      this.inputSystem = new CharacterInputSystem(dsm);
+      this.inputSystem = new CharacterInputSystem(input);
       this.movementSystem = new CharacterMovementSystem(
         engine,
         this.body,

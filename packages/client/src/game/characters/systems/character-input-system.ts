@@ -1,21 +1,16 @@
 import {
-  DeviceSourceManager,
-  DeviceType,
   IDisposable,
   IKeyboardEvent,
   IPointerEvent,
   IWheelEvent,
   Observer,
 } from "@babylonjs/core";
-import { CharacterInput } from "..";
-import { DeviceSourceType } from "@babylonjs/core/DeviceInput/internalDeviceSourceManager";
+import { Input } from "../../input";
+import { CharacterInput } from "../types/character-input";
 
 export class CharacterInputSystem implements IDisposable {
-  private readonly deviceConnectedObserver: Observer<DeviceSourceType>;
-  private readonly deviceDisconnectedObserver: Observer<DeviceSourceType>;
-  private keyboardInputObserver: Observer<IKeyboardEvent> | null = null;
-  private mouseInputObserver: Observer<IWheelEvent | IPointerEvent> | null =
-    null;
+  private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
+  private readonly mouseInputObserver: Observer<IWheelEvent | IPointerEvent>;
 
   private keys = {
     w: false,
@@ -29,58 +24,18 @@ export class CharacterInputSystem implements IDisposable {
     y: 0,
   };
 
-  constructor(dsm: DeviceSourceManager) {
-    const keyboard = dsm.getDeviceSource(DeviceType.Keyboard);
-    const mouse = dsm.getDeviceSource(DeviceType.Mouse);
-
-    if (keyboard) {
-      this.onDeviceConnected(keyboard);
-    }
-
-    if (mouse) {
-      this.onDeviceConnected(mouse);
-    }
-
-    this.deviceConnectedObserver = dsm.onDeviceConnectedObservable.add(
-      this.onDeviceConnected.bind(this)
+  constructor(input: Input) {
+    this.keyboardInputObserver = input.keyboardInput.add(
+      this.onKeyboardInputChanged.bind(this)
     );
-    this.deviceDisconnectedObserver = dsm.onDeviceDisconnectedObservable.add(
-      this.onDeviceDisconnected.bind(this)
+    this.mouseInputObserver = input.mouseInput.add(
+      this.onMouseInputChanged.bind(this)
     );
   }
 
   dispose() {
-    this.deviceConnectedObserver.remove();
-    this.deviceDisconnectedObserver.remove();
-    this.keyboardInputObserver?.remove();
-    this.mouseInputObserver?.remove();
-  }
-
-  private onDeviceConnected(ev: DeviceSourceType) {
-    switch (ev.deviceType) {
-      case DeviceType.Keyboard:
-        this.keyboardInputObserver = ev.onInputChangedObservable.add(
-          this.onKeyboardInputChanged.bind(this)
-        );
-        break;
-      case DeviceType.Mouse:
-        this.mouseInputObserver = ev.onInputChangedObservable.add(
-          this.onMouseInputChanged.bind(this)
-        );
-    }
-  }
-
-  private onDeviceDisconnected(ev: DeviceSourceType) {
-    switch (ev.deviceType) {
-      case DeviceType.Keyboard:
-        this.keyboardInputObserver?.remove();
-        this.keyboardInputObserver = null;
-        break;
-      case DeviceType.Mouse:
-        this.mouseInputObserver?.remove();
-        this.mouseInputObserver = null;
-        break;
-    }
+    this.keyboardInputObserver.remove();
+    this.mouseInputObserver.remove();
   }
 
   private onKeyboardInputChanged(ev: IKeyboardEvent) {
