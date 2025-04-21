@@ -17,12 +17,11 @@ export class Input implements IDisposable {
   private mouseInputObserver: Observer<IWheelEvent | IPointerEvent> | null =
     null;
 
-  readonly keyboardInput: Observable<IKeyboardEvent> =
+  readonly onKeyboardInput: Observable<IKeyboardEvent> =
     new Observable<IKeyboardEvent>();
 
-  readonly mouseInput: Observable<IWheelEvent | IPointerEvent> = new Observable<
-    IWheelEvent | IPointerEvent
-  >();
+  readonly onMouseInput: Observable<IWheelEvent | IPointerEvent> =
+    new Observable<IWheelEvent | IPointerEvent>();
 
   constructor(dsm: DeviceSourceManager) {
     this.deviceConnectedObserver = dsm.onDeviceConnectedObservable.add(
@@ -49,8 +48,8 @@ export class Input implements IDisposable {
     this.keyboardInputObserver?.remove();
     this.mouseInputObserver?.remove();
 
-    this.keyboardInput.clear();
-    this.mouseInput.clear();
+    this.onKeyboardInput.clear();
+    this.onMouseInput.clear();
   }
 
   private onDeviceConnected(ev: DeviceSourceType) {
@@ -81,10 +80,10 @@ export class Input implements IDisposable {
   }
 
   private onKeyboardInputChanged(ev: IKeyboardEvent) {
-    this.keyboardInput.notifyObservers(ev);
+    this.onKeyboardInput.notifyObservers(ev);
   }
 
   private onMouseInputChanged(ev: IWheelEvent | IPointerEvent) {
-    this.mouseInput.notifyObservers(ev);
+    this.onMouseInput.notifyObservers(ev);
   }
 }

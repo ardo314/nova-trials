@@ -25,10 +25,10 @@ export class CharacterInputSystem implements IDisposable {
   };
 
   constructor(input: Input) {
-    this.keyboardInputObserver = input.keyboardInput.add(
+    this.keyboardInputObserver = input.onKeyboardInput.add(
       this.onKeyboardInputChanged.bind(this)
     );
-    this.mouseInputObserver = input.mouseInput.add(
+    this.mouseInputObserver = input.onMouseInput.add(
       this.onMouseInputChanged.bind(this)
     );
   }

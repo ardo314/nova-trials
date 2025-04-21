@@ -26,6 +26,7 @@ import { SpawnRoom, Level } from "@nova-trials/shared";
 import { Character } from "./characters/character";
 import { CharacterView } from "./characters/character-view";
 import { Input } from "./input";
+import { FpsCamera } from "./fps-camera";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -35,7 +36,7 @@ export class Game implements IDisposable {
   private readonly input: Input;
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly client: Client;
-  private readonly camera: UniversalCamera;
+  private readonly cammera: FpsCamera;
   private readonly characters: Record<string, Character> = {};
   private readonly characterViews: Record<string, CharacterView> = {};
   private havokPlugin: HavokPlugin | null = null;
@@ -54,13 +55,7 @@ export class Game implements IDisposable {
 
     this.scene = new Scene(this.engine);
     this.spawnRoom = new SpawnRoom(this.scene);
-
-    this.camera = new UniversalCamera(
-      "camera",
-      new Vector3(0, 2, -10),
-      this.scene
-    );
-    this.camera.rotationQuaternion = Quaternion.Identity();
+    this.cammera = new FpsCamera(this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.input = new Input(this.deviceSourceManager);
@@ -68,7 +63,7 @@ export class Game implements IDisposable {
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
 
-    this.keyboardInputObserver = this.input.keyboardInput.add(
+    this.keyboardInputObserver = this.input.onKeyboardInput.add(
       this.onKeyboardInputChanged.bind(this)
     );
   }
@@ -102,15 +97,7 @@ export class Game implements IDisposable {
       view.update();
     }
 
-    if (this.localCharacter) {
-      this.camera.position.copyFrom(
-        this.localCharacter.head.getAbsolutePosition()
-      );
-      this.camera.rotationQuaternion.copyFrom(
-        this.localCharacter.head.absoluteRotationQuaternion
-      );
-    }
-
+    this.cammera.update();
     this.scene.render();
   }
 
@@ -146,6 +133,8 @@ export class Game implements IDisposable {
         this.scene,
         character
       ).build();
+    } else {
+      this.cammera.target = character.head;
     }
   }
 
