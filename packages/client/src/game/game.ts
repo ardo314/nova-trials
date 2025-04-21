@@ -6,10 +6,7 @@ import {
   IKeyboardEvent,
   Observable,
   Observer,
-  Quaternion,
   Scene,
-  UniversalCamera,
-  Vector3,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import {
@@ -27,6 +24,7 @@ import { Character } from "./characters/character";
 import { CharacterView } from "./characters/character-view";
 import { Input } from "./input";
 import { FpsCamera } from "./fps-camera";
+import "@babylonjs/loaders";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -45,7 +43,18 @@ export class Game implements IDisposable {
   readonly spawnRoom: SpawnRoom;
   level: Level | null = null;
 
-  readonly isPaused: Observable<boolean> = new Observable<boolean>();
+  private _isPaused: boolean = false;
+
+  readonly onIsPausedChanged: Observable<void> = new Observable<void>();
+
+  get isPaused(): boolean {
+    return this._isPaused;
+  }
+
+  set isPaused(value: boolean) {
+    this._isPaused = value;
+    this.onIsPausedChanged.notifyObservers();
+  }
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
@@ -61,7 +70,7 @@ export class Game implements IDisposable {
     this.input = new Input(this.deviceSourceManager);
     this.client = new Client(SERVER_HOST);
 
-    window.addEventListener("resize", this.onWindowResize.bind(this));
+    window.addEventListener("resize", this.onWindowResize);
 
     this.keyboardInputObserver = this.input.onKeyboardInput.add(
       this.onKeyboardInputChanged.bind(this)
@@ -78,6 +87,8 @@ export class Game implements IDisposable {
     this.havokPlugin?.dispose();
     this.room?.leave();
     this.room?.removeAllListeners();
+
+    window.removeEventListener("resize", this.onWindowResize);
   }
 
   async start() {
@@ -102,9 +113,13 @@ export class Game implements IDisposable {
   }
 
   private onKeyboardInputChanged(ev: IKeyboardEvent) {
+    if (ev.type !== "keydown") {
+      return;
+    }
+
     switch (ev.key) {
       case "Escape":
-        this.isPaused.notifyObservers(true);
+        this.isPaused = !this.isPaused;
         break;
     }
   }
@@ -188,11 +203,11 @@ export class Game implements IDisposable {
     this.havokPlugin = new HavokPlugin(true, await HavokPhysics());
   }
 
-  private onWindowResize() {
+  private onWindowResize = () => {
     console.log("[Nova Trials]", "Resizing renderer");
 
     this.engine.resize();
-  }
+  };
 
   get localCharacter() {
     if (!this.room) {

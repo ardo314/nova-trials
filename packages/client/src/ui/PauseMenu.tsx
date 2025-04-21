@@ -1,16 +1,19 @@
 import { Box, Button, Paper, Stack } from "@mui/material";
+import { useGame } from "../GameContext";
 
-type Props = {
-  onResumeClick: () => void;
-  onOptionsClick: () => void;
-  onToggleInspectorClick: () => void;
-};
+type Props = {};
 
-export function PauseMenu({
-  onResumeClick,
-  onOptionsClick,
-  onToggleInspectorClick,
-}: Props) {
+export function PauseMenu({}: Props) {
+  const game = useGame();
+
+  function onResumeClick() {
+    game.setIsPaused(false);
+  }
+
+  function onOptionsClick() {}
+
+  function onToggleInspectorClick() {}
+
   return (
     <Box
       display={"flex"}
