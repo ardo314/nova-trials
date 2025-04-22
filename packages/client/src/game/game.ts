@@ -25,6 +25,7 @@ import { CharacterView } from "./characters/character-view";
 import { Input } from "./input";
 import { FpsCamera } from "./fps-camera";
 import "@babylonjs/loaders";
+import { Inspector } from "@babylonjs/inspector";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -135,7 +136,9 @@ export class Game implements IDisposable {
     const characterBuilder = new Character.Builder(this.scene);
 
     if (index === this.room.sessionId) {
-      characterBuilder.withControls(this.input, this.room);
+      characterBuilder
+        .withInitialState(state)
+        .withControls(this.input, this.room);
     } else {
       characterBuilder.withStateSync(this.room, state);
     }
@@ -208,6 +211,16 @@ export class Game implements IDisposable {
 
     this.engine.resize();
   };
+
+  toggleInspector(globalRoot: HTMLElement) {
+    if (!Inspector.IsVisible) {
+      Inspector.Show(this.scene, {
+        globalRoot,
+      });
+    } else {
+      Inspector.Hide();
+    }
+  }
 
   get localCharacter() {
     if (!this.room) {

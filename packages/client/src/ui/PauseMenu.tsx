@@ -12,7 +12,9 @@ export function PauseMenu({}: Props) {
 
   function onOptionsClick() {}
 
-  function onToggleInspectorClick() {}
+  function onToggleInspectorClick() {
+    game.toggleInspector();
+  }
 
   return (
     <Box

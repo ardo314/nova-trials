@@ -83,6 +83,15 @@ export class Character implements IDisposable {
       return this;
     }
 
+    withInitialState(state: CharacterState): this {
+      this.body.position.x = state.position.x;
+      this.body.position.y = state.position.y;
+      this.body.position.z = state.position.z;
+      this.rotation.yaw = state.rotation.yaw;
+      this.rotation.pitch = state.rotation.pitch;
+      return this;
+    }
+
     withStateSync(room: Room, state: CharacterState): this {
       this.stateSyncSystem = new CharacterStateSyncSystem(
         this.body,
