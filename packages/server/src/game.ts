@@ -3,17 +3,40 @@ import {
   CharacterState,
   DEFAULT_CHARACTER_NAME,
   GameState,
+  getRandomElement,
   JoinOptions,
+  Level,
   SetTransform,
+  SpawnRoom,
+  createLevel,
+  LevelName,
 } from "@nova-trials/shared";
+import { Engine, NullEngine, Scene } from "@babylonjs/core";
+import "@babylonjs/loaders/glTF";
 
 export class Game extends Room<GameState> {
+  private readonly engine: Engine;
+  private readonly scene: Scene;
+  private readonly spawnRoom: SpawnRoom;
+  private level: Level | null = null;
+
   state = new GameState();
 
-  onCreate(options: any): void | Promise<any> {
+  constructor() {
+    super();
+
+    this.engine = new NullEngine();
+    this.scene = new Scene(this.engine);
+    this.spawnRoom = new SpawnRoom(this.scene);
+  }
+
+  async onCreate(options: any) {
     console.log("room created!");
 
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
+
+    await this.spawnRoom.load();
+    await this.changeLevel("red-light-green-light");
   }
 
   onJoin(client: Client, options: JoinOptions) {
@@ -21,6 +44,9 @@ export class Game extends Room<GameState> {
 
     const state = new CharacterState();
     state.name = options.name ?? DEFAULT_CHARACTER_NAME;
+    state.position.assign(
+      getRandomElement(this.spawnRoom.spawns).getAbsolutePosition()
+    );
 
     this.state.characters.set(client.sessionId, state);
   }
@@ -36,12 +62,24 @@ export class Game extends Room<GameState> {
     console.log("room", this.roomId, "disposing...");
   }
 
+  private async changeLevel(name: LevelName) {
+    if (this.level) {
+      this.level.dispose();
+    }
+
+    this.level = createLevel(name, this.scene);
+    await this.level.load();
+    this.state.level = name;
+  }
+
   private onSetTransform(client: Client, message: SetTransform.Message) {
     const character = this.state.characters.get(client.sessionId);
     if (character) {
       character.position.x = message.x;
       character.position.y = message.y;
       character.position.z = message.z;
+      character.rotation.yaw = message.yaw;
+      character.rotation.pitch = message.pitch;
     }
   }
 }

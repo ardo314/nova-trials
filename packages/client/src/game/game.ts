@@ -1,66 +1,81 @@
 import {
-  ArcRotateCamera,
   DeviceSourceManager,
   Engine,
   HavokPlugin,
-  HemisphericLight,
   IDisposable,
+  IKeyboardEvent,
+  Observable,
+  Observer,
   Scene,
-  Vector3,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import {
   CharacterState,
+  createLevel,
   DEFAULT_CHARACTER_NAME,
   GameState,
   JoinOptions,
+  LevelName,
   ROOM_NAME,
-  SEND_DELTA_TIME,
-  SetTransform,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
-import { Character } from "./character";
-import { CharacterView } from "./characterView";
-import { CharacterController } from "./characterController";
+import { SpawnRoom, Level } from "@nova-trials/shared";
+import { Character } from "./characters/character";
+import { CharacterView } from "./characters/character-view";
+import { Input } from "./input";
+import { FpsCamera } from "./fps-camera";
+import "@babylonjs/loaders";
+import { Inspector } from "@babylonjs/inspector";
 
 const SERVER_HOST = "http://localhost:2567";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
   private readonly deviceSourceManager: DeviceSourceManager;
+  private readonly input: Input;
+  private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly client: Client;
-  private havokPlugin: HavokPlugin | null = null;
-  private room: Room<GameState> | null = null;
+  private readonly cammera: FpsCamera;
   private readonly characters: Record<string, Character> = {};
   private readonly characterViews: Record<string, CharacterView> = {};
-  private characterController: CharacterController | null = null;
-  private sendTime = 0;
-  scene: Scene;
+  private havokPlugin: HavokPlugin | null = null;
+  private room: Room<GameState> | null = null;
+  readonly scene: Scene;
+  readonly spawnRoom: SpawnRoom;
+  level: Level | null = null;
+
+  private _isPaused: boolean = false;
+
+  readonly onIsPausedChanged: Observable<void> = new Observable<void>();
+
+  get isPaused(): boolean {
+    return this._isPaused;
+  }
+
+  set isPaused(value: boolean) {
+    this._isPaused = value;
+    this.onIsPausedChanged.notifyObservers();
+  }
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
 
     this.engine = new Engine(canvas, true, {}, false);
-    this.engine.runRenderLoop(this.onUpdate.bind(this));
+    this.engine.runRenderLoop(this.update.bind(this));
 
     this.scene = new Scene(this.engine);
-
-    const camera = new ArcRotateCamera(
-      "camera",
-      -Math.PI / 2,
-      Math.PI / 2.5,
-      3,
-      new Vector3(0, 1, -10),
-      this.scene
-    );
-    camera.attachControl(this.engine.getRenderingCanvas(), true);
-
-    new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
+    this.spawnRoom = new SpawnRoom(this.scene);
+    this.cammera = new FpsCamera(this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
+    this.input = new Input(this.deviceSourceManager);
     this.client = new Client(SERVER_HOST);
 
-    window.addEventListener("resize", this.onWindowResize.bind(this));
+    window.addEventListener("resize", this.onWindowResize);
+
+    this.keyboardInputObserver = this.input.onKeyboardInput.add(
+      this.onKeyboardInputChanged.bind(this)
+    );
   }
 
   dispose(): void {
@@ -68,9 +83,13 @@ export class Game implements IDisposable {
 
     this.engine.dispose();
     this.deviceSourceManager.dispose();
+    this.input.dispose();
+    this.keyboardInputObserver.remove();
     this.havokPlugin?.dispose();
     this.room?.leave();
     this.room?.removeAllListeners();
+
+    window.removeEventListener("resize", this.onWindowResize);
   }
 
   async start() {
@@ -78,58 +97,62 @@ export class Game implements IDisposable {
 
     await this.loadHavokPhysics();
     await this.join();
+    await this.spawnRoom.load();
   }
 
-  private onUpdate() {
-    this.characterController?.update(this.engine.getDeltaTime());
-
-    this.sendTime += this.engine.getDeltaTime();
-    if (this.sendTime >= SEND_DELTA_TIME) {
-      this.sendSetTransform();
-      this.sendTime -= SEND_DELTA_TIME;
+  private update() {
+    for (const character of Object.values(this.characters)) {
+      character.update();
     }
 
     for (const view of Object.values(this.characterViews)) {
       view.update();
     }
 
+    this.cammera.update();
     this.scene.render();
   }
 
-  private sendSetTransform() {
-    if (!this.localCharacter) {
+  private onKeyboardInputChanged(ev: IKeyboardEvent) {
+    if (ev.type !== "keydown") {
       return;
     }
 
-    const position = this.localCharacter.node.position;
-    const message: SetTransform.Message = {
-      x: position.x,
-      y: position.y,
-      z: position.z,
-    };
-
-    this.room?.send(SetTransform.Type, message);
+    switch (ev.key) {
+      case "Escape":
+        this.isPaused = !this.isPaused;
+        break;
+    }
   }
 
   private onCharacterAdd(state: CharacterState, index: string) {
     console.log("[Nova Trials]", "Character added", state.name, index);
 
-    const character = new Character(this.scene);
-    character.fromState(state);
+    if (this.room === null) {
+      console.error("[Nova Trials]", "Room is null");
+      return;
+    }
 
+    const characterBuilder = new Character.Builder(this.scene);
+
+    if (index === this.room.sessionId) {
+      characterBuilder
+        .withInitialState(state)
+        .withControls(this.input, this.room);
+    } else {
+      characterBuilder.withStateSync(this.room, state);
+    }
+
+    const character = characterBuilder.build();
     this.characters[index] = character;
 
-    if (index === this.room?.sessionId) {
-      this.characterController = new CharacterController(
-        this.deviceSourceManager,
+    if (character.isRemote) {
+      this.characterViews[index] = new CharacterView.Builder(
+        this.scene,
         character
-      );
+      ).build();
     } else {
-      const $ = getStateCallbacks(this.room!);
-      $(state).position.onChange(() => character.fromState(state));
-
-      const view = new CharacterView(character, this.scene);
-      this.characterViews[index] = view;
+      this.cammera.target = character.head;
     }
   }
 
@@ -141,6 +164,13 @@ export class Game implements IDisposable {
 
     this.characterViews[index]?.dispose();
     delete this.characterViews[index];
+  }
+
+  private async onLevelChange(level: string) {
+    this.level?.dispose();
+
+    this.level = createLevel(level as LevelName, this.scene);
+    await this.level.load();
   }
 
   private onError(code: number, message?: string) {
@@ -164,6 +194,8 @@ export class Game implements IDisposable {
     this.room.onLeave(this.onLeave.bind(this));
 
     const $ = getStateCallbacks(this.room);
+
+    $(this.room.state).listen("level", this.onLevelChange.bind(this));
     $(this.room.state).characters.onAdd(this.onCharacterAdd.bind(this));
     $(this.room.state).characters.onRemove(this.onCharacterRemove.bind(this));
   }
@@ -174,10 +206,20 @@ export class Game implements IDisposable {
     this.havokPlugin = new HavokPlugin(true, await HavokPhysics());
   }
 
-  private onWindowResize() {
+  private onWindowResize = () => {
     console.log("[Nova Trials]", "Resizing renderer");
 
     this.engine.resize();
+  };
+
+  toggleInspector(globalRoot: HTMLElement) {
+    if (!Inspector.IsVisible) {
+      Inspector.Show(this.scene, {
+        globalRoot,
+      });
+    } else {
+      Inspector.Hide();
+    }
   }
 
   get localCharacter() {
