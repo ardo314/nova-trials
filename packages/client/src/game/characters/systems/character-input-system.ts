@@ -6,7 +6,7 @@ import {
   Observer,
 } from "@babylonjs/core";
 import { Input } from "../../input";
-import { CharacterInput } from "../types/character-input";
+import { CharacterInput } from "../components/character-input";
 
 export class CharacterInputSystem implements IDisposable {
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
@@ -24,7 +24,7 @@ export class CharacterInputSystem implements IDisposable {
     y: 0,
   };
 
-  constructor(input: Input) {
+  constructor(input: Input, private readonly characterInput: CharacterInput) {
     this.keyboardInputObserver = input.onKeyboardInput.add(
       this.onKeyboardInputChanged.bind(this)
     );
@@ -60,31 +60,27 @@ export class CharacterInputSystem implements IDisposable {
     this.pointer.y += ev.movementY;
   }
 
-  execute(): CharacterInput {
-    const input: CharacterInput = {
-      forward: 0,
-      right: 0,
+  execute() {
+    this.characterInput.forward = 0;
+    this.characterInput.right = 0;
 
-      pitch: this.pointer.y * 0.005,
-      yaw: this.pointer.x * 0.005,
-    };
+    this.characterInput.pitch = this.pointer.y * 0.005;
+    this.characterInput.yaw = this.pointer.x * 0.005;
 
     this.pointer.x = 0;
     this.pointer.y = 0;
 
     if (this.keys.w) {
-      input.forward += 1;
+      this.characterInput.forward += 1;
     }
     if (this.keys.s) {
-      input.forward -= 1;
+      this.characterInput.forward -= 1;
     }
     if (this.keys.a) {
-      input.right -= 1;
+      this.characterInput.right -= 1;
     }
     if (this.keys.d) {
-      input.right += 1;
+      this.characterInput.right += 1;
     }
-
-    return input;
   }
 }

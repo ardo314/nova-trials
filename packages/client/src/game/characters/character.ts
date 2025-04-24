@@ -7,6 +7,10 @@ import { getStateCallbacks, Room } from "colyseus.js";
 import { CharacterState } from "@nova-trials/shared";
 import { CharacterRotation } from "./components/character-rotation";
 import { Input } from "../input";
+import { CharacterInput } from "./components/character-input";
+import { CharacterTargetSystem } from "./systems/character-target-system";
+import { CharacterInteractionSystem } from "./systems/character-interaction-system";
+import { CharacterTarget } from "./components/character-target";
 
 export class Character implements IDisposable {
   private constructor(
@@ -14,6 +18,8 @@ export class Character implements IDisposable {
     readonly head: TransformNode,
     private readonly inputSystem?: CharacterInputSystem,
     private readonly movementSystem?: CharacterMovementSystem,
+    private readonly targetSystem?: CharacterTargetSystem,
+    private readonly interactionSystem?: CharacterInteractionSystem,
     private readonly sendSystem?: CharacterSendSystem,
     private readonly stateSyncSystem?: CharacterStateSyncSystem
   ) {}
@@ -25,11 +31,11 @@ export class Character implements IDisposable {
   }
 
   update() {
-    if (this.inputSystem && this.movementSystem && this.sendSystem) {
-      const input = this.inputSystem.execute();
-      this.movementSystem.execute(input);
-      this.sendSystem.execute();
-    }
+    this.inputSystem?.execute();
+    this.movementSystem?.execute();
+    this.targetSystem?.execute();
+    this.interactionSystem?.execute();
+    this.sendSystem?.execute();
   }
 
   get isLocal(): boolean {
@@ -51,6 +57,8 @@ export class Character implements IDisposable {
 
     private inputSystem?: CharacterInputSystem;
     private movementSystem?: CharacterMovementSystem;
+    private targetSystem?: CharacterTargetSystem;
+    private interactionSystem?: CharacterInteractionSystem;
     private sendSystem?: CharacterSendSystem;
     private stateSyncSystem?: CharacterStateSyncSystem;
 
@@ -68,11 +76,19 @@ export class Character implements IDisposable {
 
     withControls(input: Input, room: Room): this {
       const engine = this.scene.getEngine();
-      this.inputSystem = new CharacterInputSystem(input);
+      const characterInput = new CharacterInput();
+      const target = new CharacterTarget();
+      this.inputSystem = new CharacterInputSystem(input, characterInput);
       this.movementSystem = new CharacterMovementSystem(
         engine,
         this.body,
-        this.rotation
+        this.rotation,
+        characterInput
+      );
+      this.targetSystem = new CharacterTargetSystem(this.head, target);
+      this.interactionSystem = new CharacterInteractionSystem(
+        target,
+        characterInput
       );
       this.sendSystem = new CharacterSendSystem(
         engine,
@@ -108,6 +124,8 @@ export class Character implements IDisposable {
         this.head,
         this.inputSystem,
         this.movementSystem,
+        this.targetSystem,
+        this.interactionSystem,
         this.sendSystem,
         this.stateSyncSystem
       );

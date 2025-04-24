@@ -23,6 +23,7 @@ export class CharacterState extends Schema {
   @type(Vector3State) position: Vector3State = new Vector3State();
   @type(CharacterRotationState) rotation: CharacterRotationState =
     new CharacterRotationState();
+  @type("boolean") isReady: boolean = false;
 }
 
 export class GameState extends Schema {
