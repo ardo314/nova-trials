@@ -1,15 +1,32 @@
-import { TransformNode } from "@babylonjs/core";
+import { IDisposable } from "@babylonjs/core";
+import { GetCallbackProxy } from "@colyseus/schema";
+import { CharacterState } from "@nova-trials/shared";
+import { CharacterView } from "../components/character-view";
 
-export class CharacterViewSyncSystem {
+export class CharacterViewSyncSystem implements IDisposable {
+  private readonly detachPositionListener: () => void;
+  private readonly detachRotationListener: () => void;
+
   constructor(
-    private readonly body: TransformNode,
-    private readonly characterBody: TransformNode
-  ) {}
+    view: CharacterView,
+    state: CharacterState,
+    proxy: GetCallbackProxy
+  ) {
+    this.detachPositionListener = proxy(state).position.onChange(() => {
+      view.position.copyFromFloats(
+        state.position.x,
+        state.position.y,
+        state.position.z
+      );
+    });
 
-  execute() {
-    this.body.position.copyFrom(this.characterBody.position);
-    this.body.rotationQuaternion!.copyFrom(
-      this.characterBody.rotationQuaternion!
-    );
+    this.detachRotationListener = proxy(state).rotation.onChange(() => {
+      view.yaw = state.rotation.yaw;
+    });
+  }
+
+  dispose() {
+    this.detachPositionListener();
+    this.detachRotationListener();
   }
 }

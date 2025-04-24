@@ -21,11 +21,12 @@ import {
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { SpawnRoom, Level } from "@nova-trials/shared";
 import { Character } from "./characters/character";
-import { CharacterView } from "./characters/character-view";
 import { Input } from "./input";
 import { FpsCamera } from "./fps-camera";
 import "@babylonjs/loaders";
 import { Inspector } from "@babylonjs/inspector";
+import { LocalCharacter } from "./characters/local-character";
+import { RemoteCharacter } from "./characters/remote-character";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -37,7 +38,6 @@ export class Game implements IDisposable {
   private readonly client: Client;
   private readonly cammera: FpsCamera;
   private readonly characters: Record<string, Character> = {};
-  private readonly characterViews: Record<string, CharacterView> = {};
   private havokPlugin: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   readonly scene: Scene;
@@ -78,7 +78,7 @@ export class Game implements IDisposable {
     );
   }
 
-  dispose(): void {
+  dispose() {
     console.log("[Nova Trials]", "Disposing game");
 
     this.engine.dispose();
@@ -105,10 +105,6 @@ export class Game implements IDisposable {
       character.update();
     }
 
-    for (const view of Object.values(this.characterViews)) {
-      view.update();
-    }
-
     this.cammera.update();
     this.scene.render();
   }
@@ -133,26 +129,18 @@ export class Game implements IDisposable {
       return;
     }
 
-    const characterBuilder = new Character.Builder(this.scene);
-
     if (index === this.room.sessionId) {
-      characterBuilder
-        .withInitialState(state)
-        .withControls(this.input, this.room);
-    } else {
-      characterBuilder.withStateSync(this.room, state);
-    }
-
-    const character = characterBuilder.build();
-    this.characters[index] = character;
-
-    if (character.isRemote) {
-      this.characterViews[index] = new CharacterView.Builder(
+      const character = new LocalCharacter(
         this.scene,
-        character
-      ).build();
+        this.input,
+        this.room,
+        state
+      );
+      this.characters[index] = character;
+      this.cammera.target = character.kinematic.head;
     } else {
-      this.cammera.target = character.head;
+      const character = new RemoteCharacter(this.scene, this.room, state);
+      this.characters[index] = character;
     }
   }
 
@@ -161,9 +149,6 @@ export class Game implements IDisposable {
 
     this.characters[index].dispose();
     delete this.characters[index];
-
-    this.characterViews[index]?.dispose();
-    delete this.characterViews[index];
   }
 
   private async onLevelChange(level: string) {
