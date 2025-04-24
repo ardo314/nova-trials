@@ -4,4 +4,6 @@ export class CharacterInput {
 
   pitch: number = 0;
   yaw: number = 0;
+
+  interact: boolean = false;
 }

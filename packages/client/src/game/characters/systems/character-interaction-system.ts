@@ -7,5 +7,15 @@ export class CharacterInteractionSystem {
     private readonly input: CharacterInput
   ) {}
 
-  execute() {}
+  execute() {
+    if (!this.target.interactable) {
+      return;
+    }
+
+    if (!this.input.interact) {
+      return;
+    }
+
+    // Do something
+  }
 }

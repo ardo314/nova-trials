@@ -17,6 +17,7 @@ export class CharacterInputSystem implements IDisposable {
     a: false,
     s: false,
     d: false,
+    leftMouse: false,
   };
 
   private pointer = {
@@ -58,17 +59,18 @@ export class CharacterInputSystem implements IDisposable {
   private onMouseInputChanged(ev: IWheelEvent | IPointerEvent) {
     this.pointer.x += ev.movementX;
     this.pointer.y += ev.movementY;
+    this.keys.leftMouse = false;
   }
 
   execute() {
-    this.characterInput.forward = 0;
-    this.characterInput.right = 0;
-
     this.characterInput.pitch = this.pointer.y * 0.005;
     this.characterInput.yaw = this.pointer.x * 0.005;
 
     this.pointer.x = 0;
     this.pointer.y = 0;
+
+    this.characterInput.forward = 0;
+    this.characterInput.right = 0;
 
     if (this.keys.w) {
       this.characterInput.forward += 1;
@@ -82,5 +84,7 @@ export class CharacterInputSystem implements IDisposable {
     if (this.keys.d) {
       this.characterInput.right += 1;
     }
+
+    this.characterInput.interact = this.keys.leftMouse;
   }
 }

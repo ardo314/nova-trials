@@ -10,6 +10,7 @@ import {
   SpawnRoom,
   createLevel,
   LevelName,
+  SetReady,
 } from "@nova-trials/shared";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
@@ -34,6 +35,7 @@ export class Game extends Room<GameState> {
     console.log("room created!");
 
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
+    this.onMessage(SetReady.Type, this.onSetReady.bind(this));
 
     await this.spawnRoom.load();
     await this.changeLevel("red-light-green-light");
@@ -74,12 +76,33 @@ export class Game extends Room<GameState> {
 
   private onSetTransform(client: Client, message: SetTransform.Message) {
     const character = this.state.characters.get(client.sessionId);
-    if (character) {
-      character.position.x = message.x;
-      character.position.y = message.y;
-      character.position.z = message.z;
-      character.rotation.yaw = message.yaw;
-      character.rotation.pitch = message.pitch;
+    if (!character) {
+      console.warn(
+        "SetTransform",
+        "Character not found for client",
+        client.sessionId
+      );
+      return;
     }
+
+    character.position.x = message.x;
+    character.position.y = message.y;
+    character.position.z = message.z;
+    character.rotation.yaw = message.yaw;
+    character.rotation.pitch = message.pitch;
+  }
+
+  private onSetReady(client: Client, message: SetReady.Message) {
+    const character = this.state.characters.get(client.sessionId);
+    if (!character) {
+      console.warn(
+        "SetReady",
+        "Character not found for client",
+        client.sessionId
+      );
+      return;
+    }
+
+    character.isReady = true;
   }
 }
