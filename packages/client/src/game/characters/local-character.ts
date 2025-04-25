@@ -11,6 +11,7 @@ import { CharacterState } from "@nova-trials/shared";
 import { Room } from "colyseus.js";
 import { Input } from "../input";
 import { CharacterKinematic } from "./components/character-kinematic";
+import { getCharacterController } from "./components/character-physics";
 
 export class LocalCharacter extends Character {
   readonly kinematic: CharacterKinematic;
@@ -31,6 +32,16 @@ export class LocalCharacter extends Character {
     super();
 
     this.kinematic = new CharacterKinematic(scene);
+    this.kinematic.position.x = state.position.x;
+    this.kinematic.position.y = state.position.y;
+    this.kinematic.position.z = state.position.z;
+    this.kinematic.yaw = state.rotation.yaw;
+    this.kinematic.pitch = state.rotation.pitch;
+
+    const characterController = getCharacterController(
+      scene,
+      this.kinematic.body.position
+    );
 
     const characterInput = new CharacterInput();
     const target = new CharacterTarget();
@@ -41,6 +52,7 @@ export class LocalCharacter extends Character {
     this.movementSystem = new CharacterMovementSystem(
       engine,
       this.kinematic,
+      characterController,
       characterInput
     );
 
@@ -56,12 +68,6 @@ export class LocalCharacter extends Character {
     );
 
     this.sendSystem = new CharacterSendSystem(engine, room, this.kinematic);
-
-    this.kinematic.position.x = state.position.x;
-    this.kinematic.position.y = state.position.y;
-    this.kinematic.position.z = state.position.z;
-    this.kinematic.yaw = state.rotation.yaw;
-    this.kinematic.pitch = state.rotation.pitch;
   }
 
   dispose() {

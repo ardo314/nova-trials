@@ -18,13 +18,13 @@ export class CharacterView
     this.body = new TransformNode("characterView", scene);
     this.body.rotationQuaternion = Quaternion.Identity();
 
-    const mesh = MeshBuilder.CreateBox(
+    const mesh = MeshBuilder.CreateCapsule(
       "box",
-      { height: 2, width: 1, depth: 1 },
+      { height: 1.8, radius: 0.5 },
       scene
     );
     mesh.setParent(this.body);
-    mesh.position.y = 1;
+    mesh.position.y = 0.9;
   }
 
   dispose() {
