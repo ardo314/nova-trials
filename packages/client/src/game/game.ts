@@ -7,6 +7,7 @@ import {
   Observable,
   Observer,
   Scene,
+  Vector3,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import {
@@ -38,7 +39,7 @@ export class Game implements IDisposable {
   private readonly client: Client;
   private readonly cammera: FpsCamera;
   private readonly characters: Record<string, Character> = {};
-  private havokPlugin: HavokPlugin | null = null;
+  private physicsEngine: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   readonly scene: Scene;
   readonly spawnRoom: SpawnRoom;
@@ -85,7 +86,7 @@ export class Game implements IDisposable {
     this.deviceSourceManager.dispose();
     this.input.dispose();
     this.keyboardInputObserver.remove();
-    this.havokPlugin?.dispose();
+    this.physicsEngine?.dispose();
     this.room?.leave();
     this.room?.removeAllListeners();
 
@@ -129,8 +130,14 @@ export class Game implements IDisposable {
       return;
     }
 
+    if (this.physicsEngine === null) {
+      console.error("[Nova Trials]", "HavokEngine is null");
+      return;
+    }
+
     if (index === this.room.sessionId) {
       const character = new LocalCharacter(
+        this.physicsEngine,
         this.scene,
         this.input,
         this.room,
@@ -188,7 +195,8 @@ export class Game implements IDisposable {
   private async loadHavokPhysics() {
     console.log("[Nova Trials]", "Loading Havok Physics");
 
-    this.havokPlugin = new HavokPlugin(true, await HavokPhysics());
+    this.physicsEngine = new HavokPlugin(true, await HavokPhysics());
+    this.scene.enablePhysics(new Vector3(0, -9.81, 0), this.physicsEngine);
   }
 
   private onWindowResize = () => {

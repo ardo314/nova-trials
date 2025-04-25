@@ -5,7 +5,7 @@ import {
   UniversalCamera,
   Vector3,
 } from "@babylonjs/core";
-import { Actor } from "../actor";
+import { Actor } from "./actor";
 
 export class FpsCamera extends Actor {
   private readonly camera: UniversalCamera;

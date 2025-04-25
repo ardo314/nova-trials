@@ -1,4 +1,4 @@
-import { Scene } from "@babylonjs/core";
+import { HavokPlugin, Scene } from "@babylonjs/core";
 import { Character } from "./character";
 import { CharacterInputSystem } from "./systems/character-input-system";
 import { CharacterInteractionSystem } from "./systems/character-interaction-system";
@@ -21,7 +21,13 @@ export class LocalCharacter extends Character {
   private readonly interactionSystem: CharacterInteractionSystem;
   private readonly sendSystem: CharacterSendSystem;
 
-  constructor(scene: Scene, input: Input, room: Room, state: CharacterState) {
+  constructor(
+    physicsEngine: HavokPlugin,
+    scene: Scene,
+    input: Input,
+    room: Room,
+    state: CharacterState
+  ) {
     super();
 
     this.kinematic = new CharacterKinematic(scene);
@@ -38,7 +44,11 @@ export class LocalCharacter extends Character {
       characterInput
     );
 
-    this.targetSystem = new CharacterTargetSystem(this.kinematic.head, target);
+    this.targetSystem = new CharacterTargetSystem(
+      physicsEngine,
+      this.kinematic.head,
+      target
+    );
 
     this.interactionSystem = new CharacterInteractionSystem(
       target,

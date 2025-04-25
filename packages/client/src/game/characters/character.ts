@@ -1,3 +1,3 @@
-import { Actor } from "../../actor";
+import { Actor } from "../actor";
 
 export abstract class Character extends Actor {}
