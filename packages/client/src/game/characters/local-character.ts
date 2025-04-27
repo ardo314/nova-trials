@@ -1,17 +1,16 @@
 import { HavokPlugin, Scene } from "@babylonjs/core";
 import { Character } from "./character";
-import { CharacterInputSystem } from "./systems/character-input-system";
-import { CharacterInteractionSystem } from "./systems/character-interaction-system";
-import { CharacterMovementSystem } from "./systems/character-movement-system";
-import { CharacterSendSystem } from "./systems/character-send-system";
-import { CharacterTargetSystem } from "./systems/character-target-system";
-import { CharacterInput } from "./components/character-input";
 import { CharacterTarget } from "./components/character-target";
 import { CharacterState } from "@nova-trials/shared";
 import { Room } from "colyseus.js";
 import { Input } from "../input";
 import { CharacterKinematic } from "./components/character-kinematic";
-import { getCharacterController } from "./components/character-physics";
+import { CharacterInputSystem } from "./components/character-input-system";
+import { CharacterInteractionSystem } from "./components/character-interaction-system";
+import { CharacterMovementSystem } from "./components/character-movement-system";
+import { CharacterSendSystem } from "./components/character-send-system";
+import { CharacterTargetSystem } from "./components/character-target-system";
+import { getCharacterController } from "./types/character-physics";
 
 export class LocalCharacter extends Character {
   readonly kinematic: CharacterKinematic;

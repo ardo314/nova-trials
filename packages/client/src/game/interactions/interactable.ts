@@ -1,14 +1,15 @@
-export type Interactable = {
-  readonly isInteractable: boolean;
-};
+import { isObjectWithPropertOfType } from "@nova-trials/shared";
 
-export function isInteractable<T>(obj: T): obj is T & Interactable {
-  if (obj === undefined) return false;
-  if (obj === null) return false;
-  if (typeof obj !== "object") return false;
-  if (!("isInteractable" in obj)) return false;
-  if (typeof obj.isInteractable !== "boolean") return false;
-  if (obj.isInteractable !== true) return false;
+export const interactable = Symbol("isInteractable");
+
+export interface IInteractable {
+  readonly [interactable]: boolean;
+}
+
+export function isInteractable(obj: unknown): obj is IInteractable {
+  if (!isObjectWithPropertOfType<IInteractable>(obj, interactable, "boolean"))
+    return false;
+  if (obj[interactable] !== true) return false;
 
   return true;
 }

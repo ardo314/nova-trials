@@ -1,14 +1,6 @@
-import { Actor } from "@nova-trials/shared";
-import { Interactable } from "./interactions/interactable";
+import { IInteractable, interactable } from "./interactions/interactable";
 
-export class WorldButton extends Actor implements Interactable {
+export class WorldButton implements IInteractable {
+  readonly [interactable]: boolean = true;
   readonly isInteractable: true = true;
-
-  dispose(): void {
-    throw new Error("Method not implemented.");
-  }
-
-  update(): void {
-    throw new Error("Method not implemented.");
-  }
 }

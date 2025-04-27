@@ -1,5 +1,5 @@
-import { Interactable } from "../../interactions/interactable";
+import { IInteractable } from "../../interactions/interactable";
 
 export class CharacterTarget {
-  interactable: Interactable | null = null;
+  interactable: IInteractable | null = null;
 }

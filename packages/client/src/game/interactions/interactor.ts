@@ -1,5 +1,5 @@
-import { Interactable } from "./interactable";
+import { IInteractable } from "./interactable";
 
 export type Interactor = {
-  interact: (interactable: Interactable) => void;
+  interact: (interactable: IInteractable) => void;
 };
