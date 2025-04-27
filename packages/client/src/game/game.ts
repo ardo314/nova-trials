@@ -38,7 +38,7 @@ export class Game implements IDisposable {
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly client: Client;
   private readonly cammera: FpsCamera;
-  private readonly characters: Record<string, Character> = {};
+  private readonly character: Record<string, Character> = {};
   private physicsEngine: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   readonly scene: Scene;
