@@ -3,11 +3,12 @@ import {
   PhysicsRaycastResult,
   TransformNode,
 } from "@babylonjs/core";
-import { CharacterTarget } from "../components/character-target";
+import { CharacterTarget } from "./character-target";
+import { IUpdateable, update } from "@nova-trials/shared";
 
 const MAX_RANGE = 1;
 
-export class CharacterTargetSystem {
+export class CharacterTargetSystem implements IUpdateable {
   private raycastResult = new PhysicsRaycastResult();
 
   constructor(
@@ -16,7 +17,7 @@ export class CharacterTargetSystem {
     private readonly target: CharacterTarget
   ) {}
 
-  execute() {
+  [update]() {
     const start = this.head.absolutePosition;
     const end = start.add(this.head.forward.scale(MAX_RANGE));
 

@@ -2,7 +2,7 @@ export type Interactable = {
   readonly isInteractable: boolean;
 };
 
-export function isInteractable(obj: unknown): obj is Interactable {
+export function isInteractable<T>(obj: T): obj is T & Interactable {
   if (obj === undefined) return false;
   if (obj === null) return false;
   if (typeof obj !== "object") return false;

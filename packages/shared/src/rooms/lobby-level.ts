@@ -5,13 +5,13 @@ import {
   TransformNode,
 } from "@babylonjs/core";
 
-export class SpawnRoom {
+export class LobbyLevel {
   private container: AssetContainer | null = null;
 
   constructor(private scene: Scene) {}
 
   async load() {
-    console.log("[Nova Trials]", "Loading spawn room");
+    console.log("[Nova Trials]", "Loading lobby level");
 
     this.container = await LoadAssetContainerAsync(
       "http://localhost:3000/spawn-room.glb",

@@ -1,9 +1,14 @@
 import { AbstractEngine } from "@babylonjs/core";
-import { SEND_DELTA_TIME, SetTransform } from "@nova-trials/shared";
+import {
+  IUpdateable,
+  SEND_DELTA_TIME,
+  SetTransform,
+  update,
+} from "@nova-trials/shared";
 import { Room } from "colyseus.js";
-import { CharacterKinematic } from "../components/character-kinematic";
+import { CharacterKinematic } from "./character-kinematic";
 
-export class CharacterSendSystem {
+export class CharacterSendSystem implements IUpdateable {
   private sendTime = 0;
 
   constructor(
@@ -12,7 +17,7 @@ export class CharacterSendSystem {
     private readonly kinematic: CharacterKinematic
   ) {}
 
-  execute() {
+  [update]() {
     this.sendTime += this.engine.getDeltaTime();
     if (this.sendTime >= SEND_DELTA_TIME) {
       const position = this.kinematic.position;

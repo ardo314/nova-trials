@@ -6,9 +6,10 @@ import {
   Observer,
 } from "@babylonjs/core";
 import { Input } from "../../input";
-import { CharacterInput } from "../components/character-input";
+import { CharacterInput } from "../types/character-input";
+import { IUpdateable, update } from "@nova-trials/shared";
 
-export class CharacterInputSystem implements IDisposable {
+export class CharacterInputSystem implements IDisposable, IUpdateable {
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly mouseInputObserver: Observer<IWheelEvent | IPointerEvent>;
 
@@ -62,7 +63,7 @@ export class CharacterInputSystem implements IDisposable {
     this.keys.leftMouse = false;
   }
 
-  execute() {
+  [update]() {
     this.characterInput.pitch = this.pointer.y * 0.005;
     this.characterInput.yaw = this.pointer.x * 0.005;
 

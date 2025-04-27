@@ -17,11 +17,11 @@ import {
   GameState,
   JoinOptions,
   LevelName,
+  PlayerLoop,
   ROOM_NAME,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { SpawnRoom, Level } from "@nova-trials/shared";
-import { Character } from "./characters/character";
 import { Input } from "./input";
 import { FpsCamera } from "./fps-camera";
 import "@babylonjs/loaders";
@@ -102,11 +102,8 @@ export class Game implements IDisposable {
   }
 
   private update() {
-    for (const character of Object.values(this.characters)) {
-      character.update();
-    }
+    PlayerLoop.tick();
 
-    this.cammera.update();
     this.scene.render();
   }
 

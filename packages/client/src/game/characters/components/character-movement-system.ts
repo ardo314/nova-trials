@@ -3,12 +3,13 @@ import {
   PhysicsCharacterController,
   Vector3,
 } from "@babylonjs/core";
-import { CharacterInput } from "../components/character-input";
-import { CharacterKinematic } from "../components/character-kinematic";
+import { CharacterInput } from "../types/character-input";
+import { CharacterKinematic } from "./character-kinematic";
+import { IUpdateable, update } from "@nova-trials/shared";
 
 const SPEED = 5;
 
-export class CharacterMovementSystem {
+export class CharacterMovementSystem implements IUpdateable {
   constructor(
     private readonly engine: AbstractEngine,
     private readonly kinematic: CharacterKinematic,
@@ -16,7 +17,7 @@ export class CharacterMovementSystem {
     private readonly input: CharacterInput
   ) {}
 
-  execute() {
+  [update]() {
     const dt = this.engine.getDeltaTime() / 1000;
 
     this.kinematic.yaw += this.input.yaw;

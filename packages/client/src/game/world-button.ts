@@ -1,4 +1,4 @@
-import { Actor } from "./actor";
+import { Actor } from "@nova-trials/shared";
 import { Interactable } from "./interactions/interactable";
 
 export class WorldButton extends Actor implements Interactable {

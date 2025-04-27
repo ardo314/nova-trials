@@ -1,7 +1,7 @@
 import { IDisposable } from "@babylonjs/core";
 import { GetCallbackProxy } from "@colyseus/schema";
 import { CharacterState } from "@nova-trials/shared";
-import { CharacterView } from "../components/character-view";
+import { CharacterView } from "./character-view";
 
 export class CharacterViewSyncSystem implements IDisposable {
   private readonly detachPositionListener: () => void;
