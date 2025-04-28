@@ -49,6 +49,12 @@ export class PlayerLoop {
     });
   }
 
+  static clear() {
+    this.updates.length = 0;
+    this.lateUpdates.length = 0;
+    this.commandQueue.length = 0;
+  }
+
   private static processCommands() {
     while (this.commandQueue.length > 0) {
       this.commandQueue.shift()?.();

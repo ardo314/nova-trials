@@ -81,8 +81,14 @@ export class Game implements IDisposable {
   dispose() {
     console.log("[Nova Trials]", "Disposing game");
 
-    this.engine.dispose();
+    Object.values(this.characters).forEach((character) => {
+      character.dispose();
+    });
+    this.level?.dispose();
+    this.lobbyLevel?.dispose();
+    this.cammera.dispose();
     this.scene.dispose();
+    this.engine.dispose();
     this.deviceSourceManager.dispose();
     this.input.dispose();
     this.keyboardInputObserver.remove();
@@ -91,6 +97,8 @@ export class Game implements IDisposable {
     this.room?.removeAllListeners();
 
     window.removeEventListener("resize", this.onWindowResize);
+
+    PlayerLoop.clear();
   }
 
   async start() {
