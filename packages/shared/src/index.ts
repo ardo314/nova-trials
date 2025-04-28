@@ -1,9 +1,9 @@
-export * from "./engine/types";
+export * from "./framework/types";
 export * from "./rooms/lobby-level";
 export * from "./messages";
 export * from "./state";
 export * from "./rooms";
-export * from "./engine";
+export * from "./framework";
 
 export const ROOM_NAME = "game";
 export const DEFAULT_CHARACTER_NAME = "Player";
