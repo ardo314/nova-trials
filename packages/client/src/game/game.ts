@@ -17,7 +17,6 @@ import {
   GameState,
   JoinOptions,
   LevelName,
-  LobbyLevel,
   PlayerLoop,
   ROOM_NAME,
 } from "@nova-trials/shared";
@@ -28,6 +27,7 @@ import "@babylonjs/loaders";
 import { Inspector } from "@babylonjs/inspector";
 import { createFpsCamera, FpsCamera } from "./fps-camera";
 import { createLocalCharacter, createRemoteCharacter } from "./characters";
+import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -42,7 +42,7 @@ export class Game implements IDisposable {
   private physicsEngine: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   readonly scene: Scene;
-  readonly spawnRoom: LobbyLevel;
+  lobbyLevel: LobbyRoom | null = null;
   level: Level | null = null;
 
   private _isPaused: boolean = false;
@@ -65,7 +65,6 @@ export class Game implements IDisposable {
     this.engine.runRenderLoop(this.update.bind(this));
 
     this.scene = new Scene(this.engine);
-    this.spawnRoom = new LobbyLevel(this.scene);
     this.cammera = createFpsCamera(this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
@@ -83,6 +82,7 @@ export class Game implements IDisposable {
     console.log("[Nova Trials]", "Disposing game");
 
     this.engine.dispose();
+    this.scene.dispose();
     this.deviceSourceManager.dispose();
     this.input.dispose();
     this.keyboardInputObserver.remove();
@@ -96,9 +96,10 @@ export class Game implements IDisposable {
   async start() {
     console.log("[Nova Trials]", "Starting game");
 
-    await this.loadHavokPhysics();
+    this.physicsEngine = await this.loadHavokPhysics();
+    this.scene.enablePhysics(new Vector3(0, -9.81, 0), this.physicsEngine);
+    this.lobbyLevel = await createLobbyRoom(this.scene);
     await this.join();
-    await this.spawnRoom.load();
   }
 
   private update() {
@@ -192,8 +193,7 @@ export class Game implements IDisposable {
   private async loadHavokPhysics() {
     console.log("[Nova Trials]", "Loading Havok Physics");
 
-    this.physicsEngine = new HavokPlugin(true, await HavokPhysics());
-    this.scene.enablePhysics(new Vector3(0, -9.81, 0), this.physicsEngine);
+    return new HavokPlugin(true, await HavokPhysics());
   }
 
   private onWindowResize = () => {

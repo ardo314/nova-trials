@@ -10,15 +10,15 @@ import {
   createLevel,
   LevelName,
   SetReady,
-  LobbyLevel,
 } from "@nova-trials/shared";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
+import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 
 export class Game extends Room<GameState> {
   private readonly engine: Engine;
   private readonly scene: Scene;
-  private readonly spawnRoom: LobbyLevel;
+  private spawnRoom: LobbyRoom | null = null;
   private level: Level | null = null;
 
   state = new GameState();
@@ -28,7 +28,6 @@ export class Game extends Room<GameState> {
 
     this.engine = new NullEngine();
     this.scene = new Scene(this.engine);
-    this.spawnRoom = new LobbyLevel(this.scene);
   }
 
   async onCreate(options: any) {
@@ -37,7 +36,7 @@ export class Game extends Room<GameState> {
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
     this.onMessage(SetReady.Type, this.onSetReady.bind(this));
 
-    await this.spawnRoom.load();
+    this.spawnRoom = await createLobbyRoom(this.scene);
     await this.changeLevel("red-light-green-light");
   }
 
@@ -46,9 +45,7 @@ export class Game extends Room<GameState> {
 
     const state = new CharacterState();
     state.name = options.name ?? DEFAULT_CHARACTER_NAME;
-    state.position.assign(
-      getRandomElement(this.spawnRoom.spawns).getAbsolutePosition()
-    );
+    state.position.assign(getRandomElement(this.spawnRoom.spawns).position);
 
     this.state.characters.set(client.sessionId, state);
   }
@@ -61,6 +58,8 @@ export class Game extends Room<GameState> {
   }
 
   onDispose() {
+    this.engine.dispose();
+    this.scene.dispose();
     console.log("room", this.roomId, "disposing...");
   }
 
