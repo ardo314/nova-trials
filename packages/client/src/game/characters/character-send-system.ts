@@ -1,6 +1,6 @@
 import { AbstractEngine } from "@babylonjs/core";
 import {
-  IUpdateable,
+  IUpdate,
   SEND_DELTA_TIME,
   SetTransform,
   update,
@@ -8,7 +8,7 @@ import {
 import { Room } from "colyseus.js";
 import { CharacterKinematic } from "./character-kinematic";
 
-export class CharacterSendSystem implements IUpdateable {
+export class CharacterSendSystem implements IUpdate {
   private sendTime = 0;
 
   constructor(

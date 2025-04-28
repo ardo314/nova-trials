@@ -1,3 +1,3 @@
-export * from "./updateable";
-export * from "./late-updateable";
+export * from "./update";
+export * from "./late-update";
 export * from "./disposable";

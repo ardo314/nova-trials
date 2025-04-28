@@ -1,17 +1,13 @@
 import { Component } from "./component";
-import {
-  ILateUpdateable,
-  isLateUpdateable,
-  lateUpdate,
-} from "./types/late-updateable";
-import { isUpdateable, IUpdateable, update } from "./types/updateable";
+import { ILateUpdate, hasLateUpdate, lateUpdate } from "./types/late-update";
+import { hasUpdate, IUpdate, update } from "./types/update";
 
 type Command = () => void;
 
 export class PlayerLoop {
-  private static updates: IUpdateable[] = [];
-  private static lateUpdates: ILateUpdateable[] = [];
-  private static commandStack: Command[] = [];
+  private static updates: IUpdate[] = [];
+  private static lateUpdates: ILateUpdate[] = [];
+  private static commandQueue: Command[] = [];
 
   static tick() {
     for (const x of this.updates) {
@@ -26,25 +22,25 @@ export class PlayerLoop {
   }
 
   static addComponent(component: Component) {
-    this.commandStack.push(() => {
-      if (isUpdateable(component)) {
+    this.commandQueue.push(() => {
+      if (hasUpdate(component)) {
         this.updates.push(component);
       }
-      if (isLateUpdateable(component)) {
+      if (hasLateUpdate(component)) {
         this.lateUpdates.push(component);
       }
     });
   }
 
   static removeComponent(component: Component) {
-    this.commandStack.push(() => {
-      if (isUpdateable(component)) {
+    this.commandQueue.push(() => {
+      if (hasUpdate(component)) {
         const index = this.updates.indexOf(component);
         if (index !== -1) {
           this.updates.splice(index, 1);
         }
       }
-      if (isLateUpdateable(component)) {
+      if (hasLateUpdate(component)) {
         const index = this.lateUpdates.indexOf(component);
         if (index !== -1) {
           this.lateUpdates.splice(index, 1);
@@ -54,11 +50,8 @@ export class PlayerLoop {
   }
 
   private static processCommands() {
-    while (this.commandStack.length > 0) {
-      const command = this.commandStack.pop();
-      if (command) {
-        command();
-      }
+    while (this.commandQueue.length > 0) {
+      this.commandQueue.shift()?.();
     }
   }
 }

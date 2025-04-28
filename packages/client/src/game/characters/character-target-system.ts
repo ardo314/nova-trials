@@ -4,11 +4,11 @@ import {
   TransformNode,
 } from "@babylonjs/core";
 import { CharacterTarget } from "./character-target";
-import { IUpdateable, update } from "@nova-trials/shared";
+import { IUpdate, update } from "@nova-trials/shared";
 
 const MAX_RANGE = 1;
 
-export class CharacterTargetSystem implements IUpdateable {
+export class CharacterTargetSystem implements IUpdate {
   private raycastResult = new PhysicsRaycastResult();
 
   constructor(

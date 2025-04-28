@@ -1,4 +1,4 @@
 import { IDisposable } from "@babylonjs/core";
-import { ILateUpdateable, IUpdateable } from "./types";
+import { ILateUpdate, IUpdate } from "./types";
 
-export type Component = IUpdateable | ILateUpdateable | IDisposable;
+export type Component = IUpdate | ILateUpdate | IDisposable;

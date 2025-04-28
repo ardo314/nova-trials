@@ -5,11 +5,11 @@ import {
   IWheelEvent,
   Observer,
 } from "@babylonjs/core";
-import { Input } from "../../input";
-import { CharacterInput } from "../types/character-input";
-import { IUpdateable, update } from "@nova-trials/shared";
+import { Input } from "../input";
+import { CharacterInput } from "./character-input";
+import { IUpdate, update } from "@nova-trials/shared";
 
-export class CharacterInputSystem implements IDisposable, IUpdateable {
+export class CharacterInputSystem implements IDisposable, IUpdate {
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly mouseInputObserver: Observer<IWheelEvent | IPointerEvent>;
 

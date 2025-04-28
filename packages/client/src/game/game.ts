@@ -17,17 +17,17 @@ import {
   GameState,
   JoinOptions,
   LevelName,
+  LobbyLevel,
   PlayerLoop,
   ROOM_NAME,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
-import { SpawnRoom, Level } from "@nova-trials/shared";
+import { Level } from "@nova-trials/shared";
 import { Input } from "./input";
-import { FpsCamera } from "./fps-camera";
 import "@babylonjs/loaders";
 import { Inspector } from "@babylonjs/inspector";
-import { LocalCharacter } from "./characters/local-character";
-import { RemoteCharacter } from "./characters/remote-character";
+import { createFpsCamera, FpsCamera } from "./fps-camera";
+import { createLocalCharacter, createRemoteCharacter } from "./characters";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -38,11 +38,11 @@ export class Game implements IDisposable {
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly client: Client;
   private readonly cammera: FpsCamera;
-  private readonly character: Record<string, Character> = {};
+  private readonly characters: Record<string, IDisposable> = {};
   private physicsEngine: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   readonly scene: Scene;
-  readonly spawnRoom: SpawnRoom;
+  readonly spawnRoom: LobbyLevel;
   level: Level | null = null;
 
   private _isPaused: boolean = false;
@@ -65,8 +65,8 @@ export class Game implements IDisposable {
     this.engine.runRenderLoop(this.update.bind(this));
 
     this.scene = new Scene(this.engine);
-    this.spawnRoom = new SpawnRoom(this.scene);
-    this.cammera = new FpsCamera(this.scene);
+    this.spawnRoom = new LobbyLevel(this.scene);
+    this.cammera = createFpsCamera(this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.input = new Input(this.deviceSourceManager);
@@ -133,7 +133,7 @@ export class Game implements IDisposable {
     }
 
     if (index === this.room.sessionId) {
-      const character = new LocalCharacter(
+      const character = createLocalCharacter(
         this.physicsEngine,
         this.scene,
         this.input,
@@ -143,7 +143,7 @@ export class Game implements IDisposable {
       this.characters[index] = character;
       this.cammera.target = character.kinematic.head;
     } else {
-      const character = new RemoteCharacter(this.scene, this.room, state);
+      const character = createRemoteCharacter(this.scene, this.room, state);
       this.characters[index] = character;
     }
   }

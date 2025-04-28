@@ -6,8 +6,8 @@ import {
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
-import { CharacterYawSetter } from "../types/character-yaw";
-import { CharacterPosition } from "../types/character-position";
+import { CharacterYawSetter } from "./character-yaw";
+import { CharacterPosition } from "./character-position";
 
 export class CharacterView
   implements CharacterPosition, CharacterYawSetter, IDisposable

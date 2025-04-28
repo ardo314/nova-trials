@@ -28,6 +28,10 @@ export class Entity implements IDisposable {
   }
 
   add<T extends Component>(component: T) {
+    if (this.components.includes(component)) {
+      throw new Error("Component already added to entity");
+    }
+
     this.components.push(component);
     PlayerLoop.addComponent(component);
     return component;

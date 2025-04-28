@@ -7,10 +7,10 @@ import {
   JoinOptions,
   Level,
   SetTransform,
-  SpawnRoom,
   createLevel,
   LevelName,
   SetReady,
+  LobbyLevel,
 } from "@nova-trials/shared";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
@@ -18,7 +18,7 @@ import "@babylonjs/loaders/glTF";
 export class Game extends Room<GameState> {
   private readonly engine: Engine;
   private readonly scene: Scene;
-  private readonly spawnRoom: SpawnRoom;
+  private readonly spawnRoom: LobbyLevel;
   private level: Level | null = null;
 
   state = new GameState();
@@ -28,7 +28,7 @@ export class Game extends Room<GameState> {
 
     this.engine = new NullEngine();
     this.scene = new Scene(this.engine);
-    this.spawnRoom = new SpawnRoom(this.scene);
+    this.spawnRoom = new LobbyLevel(this.scene);
   }
 
   async onCreate(options: any) {

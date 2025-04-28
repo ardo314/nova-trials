@@ -3,13 +3,13 @@ import {
   PhysicsCharacterController,
   Vector3,
 } from "@babylonjs/core";
-import { CharacterInput } from "../types/character-input";
+import { CharacterInput } from "./character-input";
 import { CharacterKinematic } from "./character-kinematic";
-import { IUpdateable, update } from "@nova-trials/shared";
+import { IUpdate, update } from "@nova-trials/shared";
 
 const SPEED = 5;
 
-export class CharacterMovementSystem implements IUpdateable {
+export class CharacterMovementSystem implements IUpdate {
   constructor(
     private readonly engine: AbstractEngine,
     private readonly kinematic: CharacterKinematic,

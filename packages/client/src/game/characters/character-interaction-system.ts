@@ -1,8 +1,8 @@
-import { IUpdateable, update } from "@nova-trials/shared";
-import { CharacterInput } from "../types/character-input";
+import { IUpdate, update } from "@nova-trials/shared";
+import { CharacterInput } from "./character-input";
 import { CharacterTarget } from "./character-target";
 
-export class CharacterInteractionSystem implements IUpdateable {
+export class CharacterInteractionSystem implements IUpdate {
   constructor(
     private readonly target: CharacterTarget,
     private readonly input: CharacterInput

@@ -1,0 +1,75 @@
+import { HavokPlugin, Scene } from "@babylonjs/core";
+import { CharacterTarget } from "./character-target";
+import { Input } from "../input";
+import { CharacterKinematic } from "./character-kinematic";
+import { CharacterInputSystem } from "./character-input-system";
+import { CharacterInteractionSystem } from "./character-interaction-system";
+import { CharacterMovementSystem } from "./character-movement-system";
+import { CharacterSendSystem } from "./character-send-system";
+import { CharacterTargetSystem } from "./character-target-system";
+import { getCharacterController } from "./character-physics";
+import { CharacterInput } from "./character-input";
+import { getStateCallbacks, Room } from "colyseus.js";
+import { CharacterState, Entity } from "@nova-trials/shared";
+import { CharacterView } from "./character-view";
+import { CharacterViewSyncSystem } from "./character-view-sync-system";
+import { getCharacterPhysicsBody } from "./character-physics";
+
+export function createLocalCharacter(
+  physicsEngine: HavokPlugin,
+  scene: Scene,
+  input: Input,
+  room: Room,
+  state: CharacterState
+) {
+  const entity = new Entity();
+  const kinematic = entity.add(new CharacterKinematic(scene));
+  kinematic.position.x = state.position.x;
+  kinematic.position.y = state.position.y;
+  kinematic.position.z = state.position.z;
+  kinematic.yaw = state.rotation.yaw;
+  kinematic.pitch = state.rotation.pitch;
+
+  const characterController = getCharacterController(
+    scene,
+    kinematic.body.position
+  );
+
+  const characterInput: CharacterInput = {
+    forward: 0,
+    right: 0,
+    yaw: 0,
+    pitch: 0,
+    interact: false,
+  };
+  const target = new CharacterTarget();
+  const engine = scene.getEngine();
+
+  entity.add(new CharacterInputSystem(input, characterInput));
+  entity.add(
+    new CharacterMovementSystem(
+      engine,
+      kinematic,
+      characterController,
+      characterInput
+    )
+  );
+  entity.add(new CharacterTargetSystem(physicsEngine, kinematic.head, target));
+  entity.add(new CharacterInteractionSystem(target, characterInput));
+  entity.add(new CharacterSendSystem(engine, room, kinematic));
+
+  return { kinematic, dispose: () => entity.dispose() };
+}
+
+export function createRemoteCharacter(
+  scene: Scene,
+  room: Room,
+  state: CharacterState
+) {
+  const entity = new Entity();
+  const view = entity.add(new CharacterView(scene));
+  entity.add(getCharacterPhysicsBody(scene, view.body));
+  entity.add(new CharacterViewSyncSystem(view, state, getStateCallbacks(room)));
+
+  return { dispose: () => entity.dispose() };
+}

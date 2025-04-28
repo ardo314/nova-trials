@@ -2,10 +2,10 @@ import { isObjectWithPropertOfType } from "../utils";
 
 export const lateUpdate = Symbol("lateUpdate");
 
-export interface ILateUpdateable {
+export interface ILateUpdate {
   [lateUpdate](): void;
 }
 
-export function isLateUpdateable(thing: unknown): thing is ILateUpdateable {
+export function hasLateUpdate(thing: unknown): thing is ILateUpdate {
   return isObjectWithPropertOfType(thing, lateUpdate, "function");
 }

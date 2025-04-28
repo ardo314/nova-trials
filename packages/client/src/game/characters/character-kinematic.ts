@@ -5,9 +5,9 @@ import {
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
-import { CharacterYaw } from "../types/character-yaw";
-import { CharacterPitch } from "../types/character-pitch";
-import { CharacterPosition } from "../types/character-position";
+import { CharacterYaw } from "./character-yaw";
+import { CharacterPitch } from "./character-pitch";
+import { CharacterPosition } from "./character-position";
 
 const EYE_HEIGHT = 1.5;
 
