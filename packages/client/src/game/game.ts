@@ -42,7 +42,7 @@ export class Game implements IDisposable {
   private physicsEngine: HavokPlugin | null = null;
   private room: Room<GameState> | null = null;
   readonly scene: Scene;
-  lobbyLevel: LobbyRoom | null = null;
+  lobbyRoom: LobbyRoom | null = null;
   level: Level | null = null;
 
   private _isPaused: boolean = false;
@@ -81,24 +81,22 @@ export class Game implements IDisposable {
   dispose() {
     console.log("[Nova Trials]", "Disposing game");
 
+    this.physicsEngine?.dispose();
+    this.room?.leave();
+    this.room?.removeAllListeners();
     Object.values(this.characters).forEach((character) => {
       character.dispose();
     });
     this.level?.dispose();
-    this.lobbyLevel?.dispose();
+    this.lobbyRoom?.dispose();
     this.cammera.dispose();
     this.scene.dispose();
-    this.engine.dispose();
-    this.deviceSourceManager.dispose();
-    this.input.dispose();
     this.keyboardInputObserver.remove();
-    this.physicsEngine?.dispose();
-    this.room?.leave();
-    this.room?.removeAllListeners();
+    this.input.dispose();
+    this.deviceSourceManager.dispose();
+    this.engine.dispose();
 
     window.removeEventListener("resize", this.onWindowResize);
-
-    PlayerLoop.clear();
   }
 
   async start() {
@@ -106,7 +104,7 @@ export class Game implements IDisposable {
 
     this.physicsEngine = await this.loadHavokPhysics();
     this.scene.enablePhysics(new Vector3(0, -9.81, 0), this.physicsEngine);
-    this.lobbyLevel = await createLobbyRoom(this.scene);
+    this.lobbyRoom = await createLobbyRoom(this.scene);
     await this.join();
   }
 

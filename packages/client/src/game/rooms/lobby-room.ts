@@ -2,7 +2,6 @@ import {
   LoadAssetContainerAsync,
   Quaternion,
   Scene,
-  TransformNode,
   Vector3,
 } from "@babylonjs/core";
 import { Pose } from "@nova-trials/shared";
@@ -44,7 +43,7 @@ export async function createLobbyRoom(scene: Scene): Promise<LobbyRoom> {
     loadLobby(scene),
     loadReadyButton(
       scene,
-      new Pose(new Vector3(0, 1, 0), Quaternion.Identity())
+      new Pose(new Vector3(0, -1, 24), Quaternion.Identity())
     ),
   ]);
 

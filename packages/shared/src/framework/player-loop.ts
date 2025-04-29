@@ -10,6 +10,8 @@ export class PlayerLoop {
   private static commandQueue: Command[] = [];
 
   static tick() {
+    this.processCommands();
+
     for (const x of this.updates) {
       x[update]();
     }
@@ -17,8 +19,6 @@ export class PlayerLoop {
     for (const x of this.lateUpdates) {
       x[lateUpdate]();
     }
-
-    this.processCommands();
   }
 
   static addComponent(component: Component) {
@@ -47,12 +47,6 @@ export class PlayerLoop {
         }
       }
     });
-  }
-
-  static clear() {
-    this.updates.length = 0;
-    this.lateUpdates.length = 0;
-    this.commandQueue.length = 0;
   }
 
   private static processCommands() {

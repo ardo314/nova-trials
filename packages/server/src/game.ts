@@ -18,7 +18,7 @@ import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 export class Game extends Room<GameState> {
   private readonly engine: Engine;
   private readonly scene: Scene;
-  private spawnRoom: LobbyRoom | null = null;
+  private lobbyRoom: LobbyRoom | null = null;
   private level: Level | null = null;
 
   state = new GameState();
@@ -36,7 +36,7 @@ export class Game extends Room<GameState> {
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
     this.onMessage(SetReady.Type, this.onSetReady.bind(this));
 
-    this.spawnRoom = await createLobbyRoom(this.scene);
+    this.lobbyRoom = await createLobbyRoom();
     await this.changeLevel("red-light-green-light");
   }
 
@@ -45,7 +45,7 @@ export class Game extends Room<GameState> {
 
     const state = new CharacterState();
     state.name = options.name ?? DEFAULT_CHARACTER_NAME;
-    state.position.assign(getRandomElement(this.spawnRoom.spawns).position);
+    state.position.assign(getRandomElement(this.lobbyRoom.spawns).position);
 
     this.state.characters.set(client.sessionId, state);
   }
