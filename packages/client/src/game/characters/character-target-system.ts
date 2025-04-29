@@ -6,7 +6,7 @@ import {
 import { CharacterTarget } from "./character-target";
 import { IUpdate, update } from "@nova-trials/shared";
 
-const MAX_RANGE = 1;
+const MAX_RANGE = 2;
 
 export class CharacterTargetSystem implements IUpdate {
   private raycastResult = new PhysicsRaycastResult();
