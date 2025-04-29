@@ -1,5 +1,9 @@
 import {
   LoadAssetContainerAsync,
+  Mesh,
+  PhysicsBody,
+  PhysicsMotionType,
+  PhysicsShapeMesh,
   Quaternion,
   Scene,
   Vector3,
@@ -18,6 +22,17 @@ async function loadLobby(scene: Scene) {
     scene
   );
   container.addAllToScene();
+
+  container.meshes.forEach((mesh) => {
+    if (!(mesh instanceof Mesh)) {
+      return;
+    }
+
+    const shape = new PhysicsShapeMesh(mesh, scene);
+    const body = new PhysicsBody(mesh, PhysicsMotionType.STATIC, false, scene);
+    body.shape = shape;
+  });
+
   return container;
 }
 
@@ -29,9 +44,20 @@ async function loadReadyButton(scene: Scene, pose: Pose) {
     scene
   );
   container.addAllToScene();
+
   const base = container.meshes.find((mesh) => mesh.name === "base");
   base?.position.copyFrom(pose.position);
   base?.rotationQuaternion?.copyFrom(pose.rotation);
+
+  container.meshes.forEach((mesh) => {
+    if (!(mesh instanceof Mesh)) {
+      return;
+    }
+
+    const shape = new PhysicsShapeMesh(mesh, scene);
+    const body = new PhysicsBody(mesh, PhysicsMotionType.STATIC, false, scene);
+    body.shape = shape;
+  });
 
   return container;
 }

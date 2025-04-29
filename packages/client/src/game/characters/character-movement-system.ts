@@ -1,39 +1,53 @@
 import {
   AbstractEngine,
+  CharacterSupportedState,
   PhysicsCharacterController,
   Vector3,
 } from "@babylonjs/core";
 import { CharacterInput } from "./character-input";
 import { CharacterKinematic } from "./character-kinematic";
 import { IUpdate, update } from "@nova-trials/shared";
+import { CharacterVelocity } from "./character-velocity";
 
 const SPEED = 5;
+const GRAVITY = new Vector3(0, -9.81, 0);
 
 export class CharacterMovementSystem implements IUpdate {
   constructor(
     private readonly engine: AbstractEngine,
     private readonly kinematic: CharacterKinematic,
-    private readonly controller: PhysicsCharacterController,
-    private readonly input: CharacterInput
+    private readonly characterVelocity: CharacterVelocity,
+    private readonly characterController: PhysicsCharacterController,
+    private readonly characterInput: CharacterInput
   ) {}
 
   [update]() {
     const dt = this.engine.getDeltaTime() / 1000;
 
-    this.kinematic.yaw += this.input.yaw;
-    this.kinematic.pitch += this.input.pitch;
+    this.kinematic.yaw += this.characterInput.yaw;
+    this.kinematic.pitch += this.characterInput.pitch;
 
-    const velocity = new Vector3();
+    this.characterVelocity.value.set(0, 0, 0);
+    this.kinematic.body.forward.scaleAndAddToRef(
+      this.characterInput.forward,
+      this.characterVelocity.value
+    );
+    this.kinematic.body.right.scaleAndAddToRef(
+      this.characterInput.right,
+      this.characterVelocity.value
+    );
+    this.characterVelocity.value.normalize();
+    this.characterVelocity.value.scaleInPlace(SPEED);
 
-    this.kinematic.body.forward.scaleAndAddToRef(this.input.forward, velocity);
-    this.kinematic.body.right.scaleAndAddToRef(this.input.right, velocity);
-    velocity.normalize();
-    velocity.scaleInPlace(SPEED);
+    const support = this.characterController.checkSupport(dt, GRAVITY);
 
-    const support = this.controller.checkSupport(dt, Vector3.Down());
-    this.controller.setVelocity(velocity);
-    this.controller.integrate(dt, support, Vector3.Zero());
+    if (support.supportedState === CharacterSupportedState.UNSUPPORTED) {
+      this.characterVelocity.value.y = GRAVITY.y;
+    }
 
-    this.kinematic.position.copyFrom(this.controller.getPosition());
+    this.characterController.setVelocity(this.characterVelocity.value);
+    this.characterController.integrate(dt, support, GRAVITY);
+
+    this.kinematic.position.copyFrom(this.characterController.getPosition());
   }
 }

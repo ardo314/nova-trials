@@ -81,7 +81,6 @@ export class Game implements IDisposable {
   dispose() {
     console.log("[Nova Trials]", "Disposing game");
 
-    this.physicsEngine?.dispose();
     this.room?.leave();
     this.room?.removeAllListeners();
     Object.values(this.characters).forEach((character) => {
@@ -94,6 +93,7 @@ export class Game implements IDisposable {
     this.keyboardInputObserver.remove();
     this.input.dispose();
     this.deviceSourceManager.dispose();
+    this.physicsEngine?.dispose();
     this.engine.dispose();
 
     window.removeEventListener("resize", this.onWindowResize);

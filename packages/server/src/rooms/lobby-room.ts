@@ -9,6 +9,6 @@ export async function createLobbyRoom(): Promise<LobbyRoom> {
   console.log("[Nova Trials]", "Loading lobby level");
 
   return {
-    spawns: [new Pose(new Vector3(0, 0, 40), Quaternion.Identity())],
+    spawns: [new Pose(new Vector3(0, -1, 40), Quaternion.Identity())],
   };
 }

@@ -1,4 +1,4 @@
-import { HavokPlugin, Scene } from "@babylonjs/core";
+import { HavokPlugin, Scene, Vector3 } from "@babylonjs/core";
 import { CharacterTarget } from "./character-target";
 import { Input } from "../input";
 import { CharacterKinematic } from "./character-kinematic";
@@ -14,6 +14,7 @@ import { CharacterState, Entity } from "@nova-trials/shared";
 import { CharacterView } from "./character-view";
 import { CharacterViewSyncSystem } from "./character-view-sync-system";
 import { getCharacterPhysicsBody } from "./character-physics";
+import { CharacterVelocity } from "./character-velocity";
 
 export function createLocalCharacter(
   physicsEngine: HavokPlugin,
@@ -42,6 +43,9 @@ export function createLocalCharacter(
     pitch: 0,
     interact: false,
   };
+  const characterVelocity: CharacterVelocity = {
+    value: new Vector3(0, 0, 0),
+  };
   const target = new CharacterTarget();
   const engine = scene.getEngine();
 
@@ -50,6 +54,7 @@ export function createLocalCharacter(
     new CharacterMovementSystem(
       engine,
       kinematic,
+      characterVelocity,
       characterController,
       characterInput
     )
