@@ -58,15 +58,14 @@ export class CharacterMovementSystem implements IUpdate {
       return;
     }
 
-    let zspeed = this.velocity.y;
+    const zspeed = this.velocity.y;
     this.velocity.y = 0;
 
-    let speed = this.velocity.length();
+    const speed = this.velocity.length();
     this.velocity.normalize();
 
-    let d = Vector3.Dot(this.velocity, wishdir);
-    let k = 32;
-    k *= AIR_CONTROL * d * d * dt;
+    const d = Vector3.Dot(this.velocity, wishdir);
+    const k = 32 * AIR_CONTROL * d * d * dt;
 
     if (d > 0) {
       this.velocity.x = this.velocity.x * speed + wishdir.x * k;

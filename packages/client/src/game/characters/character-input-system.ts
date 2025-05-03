@@ -18,6 +18,7 @@ export class CharacterInputSystem implements IDisposable, IUpdate {
     a: false,
     s: false,
     d: false,
+    space: false,
     leftMouse: false,
   };
 
@@ -54,6 +55,9 @@ export class CharacterInputSystem implements IDisposable, IUpdate {
       case "d":
         this.keys.d = ev.type === "keydown";
         break;
+      case " ":
+        this.keys.space = ev.type === "keydown";
+        break;
     }
   }
 
@@ -86,6 +90,7 @@ export class CharacterInputSystem implements IDisposable, IUpdate {
       this.characterInput.right += 1;
     }
 
+    this.characterInput.jump = this.keys.space;
     this.characterInput.interact = this.keys.leftMouse;
   }
 }
