@@ -14,7 +14,6 @@ import { CharacterState, Entity } from "@nova-trials/shared";
 import { CharacterView } from "./character-view";
 import { CharacterViewSyncSystem } from "./character-view-sync-system";
 import { getCharacterPhysicsBody } from "./character-physics";
-import { CharacterVelocity } from "./character-velocity";
 
 export function createLocalCharacter(
   physicsEngine: HavokPlugin,
@@ -39,13 +38,12 @@ export function createLocalCharacter(
   const characterInput: CharacterInput = {
     forward: 0,
     right: 0,
+    jump: false,
     yaw: 0,
     pitch: 0,
     interact: false,
   };
-  const characterVelocity: CharacterVelocity = {
-    value: new Vector3(0, 0, 0),
-  };
+  const velocity = new Vector3(0, 0, 0);
   const target = new CharacterTarget();
   const engine = scene.getEngine();
 
@@ -54,9 +52,9 @@ export function createLocalCharacter(
     new CharacterMovementSystem(
       engine,
       kinematic,
-      characterVelocity,
-      characterController,
-      characterInput
+      velocity,
+      characterInput,
+      characterController
     )
   );
   entity.add(new CharacterTargetSystem(physicsEngine, kinematic.head, target));

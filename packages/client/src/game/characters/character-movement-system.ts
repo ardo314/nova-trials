@@ -3,12 +3,12 @@ import {
   CharacterSupportedState,
   float,
   PhysicsCharacterController,
+  TransformNode,
   Vector3,
 } from "@babylonjs/core";
 import { CharacterInput } from "./character-input";
 import { CharacterKinematic } from "./character-kinematic";
 import { IUpdate, update } from "@nova-trials/shared";
-import { CharacterVelocity } from "./character-velocity";
 
 const GRAVITY = 20.0;
 const GROUND_FRICTION = 6;
@@ -26,162 +26,166 @@ export class CharacterMovementSystem implements IUpdate {
   constructor(
     private readonly engine: AbstractEngine,
     private readonly kinematic: CharacterKinematic,
-    private readonly characterVelocity: CharacterVelocity,
-    private readonly characterController: PhysicsCharacterController,
-    private readonly characterInput: CharacterInput
+    private readonly velocity: Vector3,
+    private readonly input: CharacterInput,
+    private readonly characterController: PhysicsCharacterController
   ) {}
 
-  private accelerateRef(
+  private applyAcceleration(
     wishdir: Vector3,
     wishspeed: float,
     accel: float,
-    dt: float,
-    velocityRef: Vector3
+    dt: float
   ) {
-    var currentspeed = Vector3.Dot(velocityRef, wishdir);
+    const currentspeed = Vector3.Dot(this.velocity, wishdir);
 
-    var addspeed = wishspeed - currentspeed;
-    if (addspeed <= 0) return;
+    const addspeed = wishspeed - currentspeed;
+    if (addspeed <= 0) {
+      return;
+    }
 
-    var accelspeed = accel * dt * wishspeed;
-    if (accelspeed > addspeed) accelspeed = addspeed;
+    let accelspeed = accel * dt * wishspeed;
+    if (accelspeed > addspeed) {
+      accelspeed = addspeed;
+    }
 
-    velocityRef.x += accelspeed * wishdir.x;
-    velocityRef.z += accelspeed * wishdir.z;
+    this.velocity.x += accelspeed * wishdir.x;
+    this.velocity.z += accelspeed * wishdir.z;
   }
 
-  private airAccelerate(Transform t, ref CharacterVelocity cv, in CharacterInput ci, float dt) {
-      var wishdir = InputToVector(ci);
-      wishdir = t.TransformDirection(wishdir);
+  private airControl(wishdir: Vector3, wishspeed: float, dt: float) {
+    if (this.input.forward === 0 || Math.abs(wishspeed) < 0.001) {
+      return;
+    }
 
-      var wishspeed = length(wishdir) * MOVE_SPEED;
+    let zspeed = this.velocity.y;
+    this.velocity.y = 0;
 
-      if (wishspeed > 0)
-          wishdir = normalize(wishdir);
+    let speed = this.velocity.length();
+    this.velocity.normalize();
 
-      float accel;
-      if (dot(cv.Value, wishdir) < 0)
-          accel = AIR_DECCELERATION;
-      else
-          accel = AIR_ACCELERATION;
+    let d = Vector3.Dot(this.velocity, wishdir);
+    let k = 32;
+    k *= AIR_CONTROL * d * d * dt;
 
-      var wishspeed2 = wishspeed;
-      if (!ci.Forward && !ci.Backward && (ci.Left || ci.Right))
-      {
-          if (wishspeed > SIDE_STRAFE_SPEED)
-              wishspeed = SIDE_STRAFE_SPEED;
-          accel = SIDE_STRAFE_ACCELERATION;
-      }
+    if (d > 0) {
+      this.velocity.x = this.velocity.x * speed + wishdir.x * k;
+      this.velocity.y = this.velocity.y * speed + wishdir.y * k;
+      this.velocity.z = this.velocity.z * speed + wishdir.z * k;
 
-      this.accelerateRef(wishdir, wishspeed, accel, dt, ref cv.Value);
+      this.velocity.normalize();
+    }
 
-      if (AIR_CONTROL > 0)
-          AirControl(in ci, wishdir, wishspeed2, dt, ref cv.Value);
-
-      cv.Value.y -= GRAVITY * dt;
+    this.velocity.x *= speed;
+    this.velocity.y = zspeed;
+    this.velocity.z *= speed;
   }
 
-  private airControl(in CharacterInput i, wishdir: Vector3, wishspeed: float, dt: float, velocityRef: Vector3)
-  {
-      if (!i.Forward && !i.Backward || Mathf.Abs(wishspeed) < 0.001)
-          return;
-
-      var zspeed = velocityRef.y;
-      velocityRef.y = 0;
-
-      var speed = length(velocityRef);
-      velocityRef = normalize(velocityRef);
-
-      var d = dot(velocityRef, wishdir);
-      var k = 32f;
-      k *= AIR_CONTROL * d * d * dt;
-
-      if (d > 0)
-      {
-        velocityRef.x = velocityRef.x * speed + wishdir.x * k;
-        velocityRef.y = velocityRef.y * speed + wishdir.y * k;
-        velocityRef.z = velocityRef.z * speed + wishdir.z * k;
-
-        velocityRef = normalize(velocityRef);
-      }
-
-      velocityRef.x *= speed;
-      velocityRef.y = zspeed;
-      velocityRef.z *= speed;
-  }
-  
-  private groundAccelerate(Transform t, ref CharacterVelocity cv, in CharacterInput ci, float dt) {
-    if (!ci.Jump)
-        ApplyFriction(1.0f, dt, ref cv.Value);
-    else
-        ApplyFriction(0, dt, ref cv.Value);
-
+  private airAccelerate(dt: float) {
     var wishdir = InputToVector(ci);
-    wishdir = t.TransformDirection(wishdir);
-
-    if (length(wishdir) > 0)
-        wishdir = normalize(wishdir);
+    wishdir = this.kinematic.body.TransformDirection(wishdir);
 
     var wishspeed = length(wishdir) * MOVE_SPEED;
 
-    Accelerate(wishdir, wishspeed, RUN_ACCELERATION, dt, ref cv.Value);
-
-    // Reset the gravity velocity
-    cv.Value.y -= GRAVITY * dt;
-
-    if (ci.Jump)
-    {
-        cv.Value.y = JUMP_SPEED;
-        //wishJump = false;
+    if (wishspeed > 0) {
+      wishdir = normalize(wishdir);
     }
+
+    let accel = 0;
+    if (Vector3.Dot(this.velocity, wishdir) < 0) {
+      accel = AIR_DECCELERATION;
+    } else {
+      accel = AIR_ACCELERATION;
+    }
+
+    var wishspeed2 = wishspeed;
+    if (this.input.forward === 0 && this.input.right !== 0) {
+      if (wishspeed > SIDE_STRAFE_SPEED) {
+        wishspeed = SIDE_STRAFE_SPEED;
+      }
+      accel = SIDE_STRAFE_ACCELERATION;
+    }
+
+    this.applyAcceleration(wishdir, wishspeed, accel, dt);
+
+    if (AIR_CONTROL > 0) {
+      this.airControl(wishdir, wishspeed2, dt);
+    }
+
+    this.velocity.y -= GRAVITY * dt;
   }
 
-  private applyFriction(t: float, dt: float, velocity: Vector3)
-  {
-      var vec = velocity;
-      vec.y = 0.0f;
+  private applyFriction(t: float, dt: float) {
+    const vec = this.velocity.clone();
+    vec.y = 0;
 
-      var speed = length(vec);
+    const speed = vec.length();
 
-      var control = speed < RUN_DECCELERATION ? RUN_DECCELERATION : speed;
-      var drop = control * GROUND_FRICTION * dt * t;
+    const control = speed < RUN_DECCELERATION ? RUN_DECCELERATION : speed;
+    const drop = control * GROUND_FRICTION * dt * t;
 
-      var newspeed = speed - drop;
+    let newspeed = speed - drop;
 
-      if (newspeed < 0)
-          newspeed = 0;
-      if (speed > 0)
-          newspeed /= speed;
+    if (newspeed < 0) {
+      newspeed = 0;
+    }
+    if (speed > 0) {
+      newspeed /= speed;
+    }
 
-      velocity.x *= newspeed;
-      velocity.z *= newspeed;
+    this.velocity.x *= newspeed;
+    this.velocity.z *= newspeed;
+  }
+
+  private groundAccelerate(dt: float) {
+    if (!this.input.jump) {
+      this.applyFriction(1.0, dt);
+    } else {
+      this.applyFriction(0, dt);
+    }
+
+    var wishdir = InputToVector(ci);
+    wishdir = this.kinematic.body.TransformDirection(wishdir);
+
+    if (length(wishdir) > 0) {
+      wishdir = normalize(wishdir);
+    }
+
+    var wishspeed = length(wishdir) * MOVE_SPEED;
+
+    this.applyAcceleration(wishdir, wishspeed, RUN_ACCELERATION, dt);
+
+    // Reset the gravity velocity
+    this.velocity.y -= GRAVITY * dt;
+
+    if (this.input.jump) {
+      this.velocity.y = JUMP_SPEED;
+      //wishJump = false;
+    }
   }
 
   [update]() {
     const dt = this.engine.getDeltaTime() / 1000;
 
-    this.kinematic.yaw += this.characterInput.yaw;
-    this.kinematic.pitch += this.characterInput.pitch;
+    this.kinematic.yaw += this.input.yaw;
+    this.kinematic.pitch += this.input.pitch;
 
-    this.characterVelocity.value.set(0, 0, 0);
+    this.velocity.set(0, 0, 0);
     this.kinematic.body.forward.scaleAndAddToRef(
-      this.characterInput.forward,
-      this.characterVelocity.value
+      this.input.forward,
+      this.velocity
     );
-    this.kinematic.body.right.scaleAndAddToRef(
-      this.characterInput.right,
-      this.characterVelocity.value
-    );
-    this.characterVelocity.value.normalize();
-    this.characterVelocity.value.scaleInPlace(SPEED);
+    this.kinematic.body.right.scaleAndAddToRef(this.input.right, this.velocity);
+    this.velocity.normalize();
+    this.velocity.scaleInPlace(SPEED);
 
     const support = this.characterController.checkSupport(dt, GRAVITY);
 
     if (support.supportedState === CharacterSupportedState.UNSUPPORTED) {
-      this.characterVelocity.value.y = GRAVITY.y;
+      this.velocity.y = GRAVITY.y;
     }
 
-    this.characterController.setVelocity(this.characterVelocity.value);
+    this.characterController.setVelocity(this.velocity);
     this.characterController.integrate(dt, support, GRAVITY);
 
     this.kinematic.position.copyFrom(this.characterController.getPosition());
