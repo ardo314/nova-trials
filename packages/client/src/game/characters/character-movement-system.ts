@@ -10,7 +10,8 @@ import { CharacterInput } from "./character-input";
 import { CharacterKinematic } from "./character-kinematic";
 import { IUpdate, update } from "@nova-trials/shared";
 
-const GRAVITY = 20.0;
+const GRAVITY_Y = -20.0;
+const GRAVITY = new Vector3(0, GRAVITY_Y, 0);
 const GROUND_FRICTION = 6;
 const AIR_ACCELERATION = 2.0;
 const AIR_DECCELERATION = 2.0;
@@ -30,6 +31,10 @@ export class CharacterMovementSystem implements IUpdate {
     private readonly input: CharacterInput,
     private readonly characterController: PhysicsCharacterController
   ) {}
+
+  private inputToVector() {
+    return new Vector3(this.input.right, 0, this.input.forward);
+  }
 
   private applyAcceleration(
     wishdir: Vector3,
@@ -81,13 +86,13 @@ export class CharacterMovementSystem implements IUpdate {
   }
 
   private airAccelerate(dt: float) {
-    var wishdir = InputToVector(ci);
+    let wishdir = this.inputToVector();
     wishdir = this.kinematic.body.TransformDirection(wishdir);
 
-    var wishspeed = length(wishdir) * MOVE_SPEED;
+    let wishspeed = wishdir.length() * MOVE_SPEED;
 
     if (wishspeed > 0) {
-      wishdir = normalize(wishdir);
+      wishdir.normalize();
     }
 
     let accel = 0;
@@ -97,7 +102,7 @@ export class CharacterMovementSystem implements IUpdate {
       accel = AIR_ACCELERATION;
     }
 
-    var wishspeed2 = wishspeed;
+    let wishspeed2 = wishspeed;
     if (this.input.forward === 0 && this.input.right !== 0) {
       if (wishspeed > SIDE_STRAFE_SPEED) {
         wishspeed = SIDE_STRAFE_SPEED;
@@ -111,7 +116,7 @@ export class CharacterMovementSystem implements IUpdate {
       this.airControl(wishdir, wishspeed2, dt);
     }
 
-    this.velocity.y -= GRAVITY * dt;
+    this.velocity.y -= GRAVITY_Y * dt;
   }
 
   private applyFriction(t: float, dt: float) {
@@ -143,19 +148,19 @@ export class CharacterMovementSystem implements IUpdate {
       this.applyFriction(0, dt);
     }
 
-    var wishdir = InputToVector(ci);
+    let wishdir = this.inputToVector();
     wishdir = this.kinematic.body.TransformDirection(wishdir);
 
-    if (length(wishdir) > 0) {
-      wishdir = normalize(wishdir);
+    if (wishdir.length() > 0) {
+      wishdir.normalize();
     }
 
-    var wishspeed = length(wishdir) * MOVE_SPEED;
+    let wishspeed = wishdir.length() * MOVE_SPEED;
 
     this.applyAcceleration(wishdir, wishspeed, RUN_ACCELERATION, dt);
 
     // Reset the gravity velocity
-    this.velocity.y -= GRAVITY * dt;
+    this.velocity.y -= GRAVITY_Y * dt;
 
     if (this.input.jump) {
       this.velocity.y = JUMP_SPEED;
@@ -169,19 +174,12 @@ export class CharacterMovementSystem implements IUpdate {
     this.kinematic.yaw += this.input.yaw;
     this.kinematic.pitch += this.input.pitch;
 
-    this.velocity.set(0, 0, 0);
-    this.kinematic.body.forward.scaleAndAddToRef(
-      this.input.forward,
-      this.velocity
-    );
-    this.kinematic.body.right.scaleAndAddToRef(this.input.right, this.velocity);
-    this.velocity.normalize();
-    this.velocity.scaleInPlace(SPEED);
-
     const support = this.characterController.checkSupport(dt, GRAVITY);
 
-    if (support.supportedState === CharacterSupportedState.UNSUPPORTED) {
-      this.velocity.y = GRAVITY.y;
+    if (support.supportedState === CharacterSupportedState.SUPPORTED) {
+      this.groundAccelerate(dt);
+    } else {
+      this.airAccelerate(dt);
     }
 
     this.characterController.setVelocity(this.velocity);
