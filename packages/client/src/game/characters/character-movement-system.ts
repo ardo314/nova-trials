@@ -3,7 +3,6 @@ import {
   CharacterSupportedState,
   float,
   PhysicsCharacterController,
-  TransformNode,
   Vector3,
 } from "@babylonjs/core";
 import { CharacterInput } from "./character-input";
@@ -86,8 +85,8 @@ export class CharacterMovementSystem implements IUpdate {
   }
 
   private airAccelerate(dt: float) {
-    let wishdir = this.inputToVector();
-    wishdir = this.kinematic.body.TransformDirection(wishdir);
+    const wishdir = this.inputToVector();
+    this.kinematic.body.getDirectionToRef(wishdir, wishdir);
 
     let wishspeed = wishdir.length() * MOVE_SPEED;
 
@@ -148,8 +147,8 @@ export class CharacterMovementSystem implements IUpdate {
       this.applyFriction(0, dt);
     }
 
-    let wishdir = this.inputToVector();
-    wishdir = this.kinematic.body.TransformDirection(wishdir);
+    const wishdir = this.inputToVector();
+    this.kinematic.body.getDirectionToRef(wishdir, wishdir);
 
     if (wishdir.length() > 0) {
       wishdir.normalize();
