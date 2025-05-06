@@ -115,7 +115,7 @@ export class CharacterMovementSystem implements IUpdate {
       this.airControl(wishdir, wishspeed2, dt);
     }
 
-    this.velocity.y -= GRAVITY_Y * dt;
+    this.velocity.y += GRAVITY_Y * dt;
   }
 
   private applyFriction(t: float, dt: float) {
@@ -159,7 +159,7 @@ export class CharacterMovementSystem implements IUpdate {
     this.applyAcceleration(wishdir, wishspeed, RUN_ACCELERATION, dt);
 
     // Reset the gravity velocity
-    this.velocity.y -= GRAVITY_Y * dt;
+    this.velocity.y += GRAVITY_Y * dt;
 
     if (this.input.jump) {
       this.velocity.y = JUMP_SPEED;
