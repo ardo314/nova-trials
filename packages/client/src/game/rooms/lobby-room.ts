@@ -17,10 +17,7 @@ export type LobbyRoom = {
 async function loadLobby(scene: Scene) {
   console.log("[Nova Trials]", "Loading lobby");
 
-  const container = await LoadAssetContainerAsync(
-    "http://localhost:3000/lobby-room.glb",
-    scene
-  );
+  const container = await LoadAssetContainerAsync("lobby-room.glb", scene);
   container.addAllToScene();
 
   container.meshes.forEach((mesh) => {
@@ -39,10 +36,7 @@ async function loadLobby(scene: Scene) {
 async function loadReadyButton(scene: Scene, pose: Pose) {
   console.log("[Nova Trials]", "Loading ready button");
 
-  const container = await LoadAssetContainerAsync(
-    "http://localhost:3000/ready-button.glb",
-    scene
-  );
+  const container = await LoadAssetContainerAsync("ready-button.glb", scene);
   container.addAllToScene();
 
   const base = container.meshes.find((mesh) => mesh.name === "base");

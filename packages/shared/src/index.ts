@@ -1,6 +1,5 @@
 export * from "./framework";
 export * from "./math";
-export * from "./rooms";
 export * from "./messages";
 export * from "./state";
 
@@ -8,6 +7,10 @@ export const ROOM_NAME = "game";
 export const DEFAULT_CHARACTER_NAME = "Player";
 export const SEND_RATE = 10;
 export const SEND_DELTA_TIME = 1000 / SEND_RATE;
+
+export enum RoomName {
+  RedLightGreenLight = "red-light-green-light",
+}
 
 export type JoinOptions = {
   name?: string;

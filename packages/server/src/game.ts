@@ -5,11 +5,9 @@ import {
   GameState,
   getRandomElement,
   JoinOptions,
-  Level,
   SetTransform,
-  createLevel,
-  LevelName,
   SetReady,
+  RoomName,
 } from "@nova-trials/shared";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
@@ -19,7 +17,6 @@ export class Game extends Room<GameState> {
   private readonly engine: Engine;
   private readonly scene: Scene;
   private lobbyRoom: LobbyRoom | null = null;
-  private level: Level | null = null;
 
   state = new GameState();
 
@@ -37,7 +34,7 @@ export class Game extends Room<GameState> {
     this.onMessage(SetReady.Type, this.onSetReady.bind(this));
 
     this.lobbyRoom = await createLobbyRoom();
-    await this.changeLevel("red-light-green-light");
+    this.state.roomName = RoomName.RedLightGreenLight;
   }
 
   onJoin(client: Client, options: JoinOptions) {
@@ -61,16 +58,6 @@ export class Game extends Room<GameState> {
     this.engine.dispose();
     this.scene.dispose();
     console.log("room", this.roomId, "disposing...");
-  }
-
-  private async changeLevel(name: LevelName) {
-    if (this.level) {
-      this.level.dispose();
-    }
-
-    this.level = createLevel(name, this.scene);
-    await this.level.load();
-    this.state.level = name;
   }
 
   private onSetTransform(client: Client, message: SetTransform.Message) {
