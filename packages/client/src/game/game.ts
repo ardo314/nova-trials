@@ -25,7 +25,11 @@ import { Input } from "./input";
 import "@babylonjs/loaders";
 import { Inspector } from "@babylonjs/inspector";
 import { createFpsCamera, FpsCamera } from "./fps-camera";
-import { createLocalCharacter, createRemoteCharacter } from "./characters";
+import {
+  createLocalCharacter,
+  createRemoteCharacter,
+  LocalCharacter,
+} from "./characters";
 import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 import { createRedLightGreenLightRoom } from "./rooms/red-light-green-light-room";
 
@@ -48,6 +52,8 @@ export class Game implements IDisposable {
   private _isPaused: boolean = false;
 
   readonly onIsPausedChanged: Observable<void> = new Observable<void>();
+  readonly onLocalCharacterTargetChanged: Observable<void> =
+    new Observable<void>();
 
   get isPaused(): boolean {
     return this._isPaused;
@@ -56,6 +62,13 @@ export class Game implements IDisposable {
   set isPaused(value: boolean) {
     this._isPaused = value;
     this.onIsPausedChanged.notifyObservers();
+  }
+
+  get localCharacter() {
+    if (!this.serverRoom) {
+      return undefined;
+    }
+    return this.characters[this.serverRoom.sessionId] as LocalCharacter;
   }
 
   constructor(window: Window, canvas: HTMLCanvasElement) {
@@ -98,6 +111,8 @@ export class Game implements IDisposable {
     this.deviceSourceManager.dispose();
     this.physicsEngine?.dispose();
     this.engine.dispose();
+    this.onIsPausedChanged.clear();
+    this.onLocalCharacterTargetChanged.clear();
 
     window.removeEventListener("resize", this.onWindowResize);
   }
@@ -152,6 +167,10 @@ export class Game implements IDisposable {
       );
       this.characters[index] = character;
       this.cammera.target = character.kinematic.head;
+
+      character.target.onChanged.add(() => {
+        this.onLocalCharacterTargetChanged.notifyObservers();
+      });
     } else {
       const character = createRemoteCharacter(
         this.scene,
@@ -233,12 +252,5 @@ export class Game implements IDisposable {
     } else {
       Inspector.Hide();
     }
-  }
-
-  get localCharacter() {
-    if (!this.serverRoom) {
-      return undefined;
-    }
-    return this.characters[this.serverRoom.sessionId];
   }
 }

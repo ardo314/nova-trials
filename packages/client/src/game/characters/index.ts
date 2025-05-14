@@ -15,13 +15,19 @@ import { CharacterView } from "./character-view";
 import { CharacterViewSyncSystem } from "./character-view-sync-system";
 import { getCharacterPhysicsBody } from "./character-physics";
 
+export type LocalCharacter = {
+  kinematic: CharacterKinematic;
+  target: CharacterTarget;
+  dispose: () => void;
+};
+
 export function createLocalCharacter(
   physicsEngine: HavokPlugin,
   scene: Scene,
   input: Input,
   room: Room,
   state: CharacterState
-) {
+): LocalCharacter {
   const entity = new Entity();
   const kinematic = entity.add(new CharacterKinematic(scene));
   kinematic.position.x = state.position.x;
@@ -61,7 +67,7 @@ export function createLocalCharacter(
   entity.add(new CharacterInteractionSystem(target, characterInput));
   entity.add(new CharacterSendSystem(engine, room, kinematic));
 
-  return { kinematic, dispose: () => entity.dispose() };
+  return { kinematic, target, dispose: () => entity.dispose() };
 }
 
 export function createRemoteCharacter(

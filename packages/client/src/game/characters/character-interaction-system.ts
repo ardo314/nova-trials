@@ -9,7 +9,7 @@ export class CharacterInteractionSystem implements IUpdate {
   ) {}
 
   [update]() {
-    if (!this.target.interactable) {
+    if (!this.target.value) {
       return;
     }
 

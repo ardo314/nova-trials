@@ -23,8 +23,11 @@ export class CharacterTargetSystem implements IUpdate {
 
     this.physics.raycast(start, end, this.raycastResult);
     if (!this.raycastResult.hasHit) {
-      this.target.interactable = null;
+      this.target.value = null;
       return;
     }
+
+    const node = this.raycastResult.body?.transformNode;
+    this.target.value = node?.metadata.interactable;
   }
 }
