@@ -1,4 +1,4 @@
-import { IUpdate, update } from "@nova-trials/shared";
+import { isInteractable, IUpdate, update } from "@nova-trials/shared";
 import { CharacterInput } from "./character-input";
 import { CharacterTarget } from "./character-target";
 
@@ -9,11 +9,11 @@ export class CharacterInteractionSystem implements IUpdate {
   ) {}
 
   [update]() {
-    if (!this.target.value) {
+    if (!this.input.interact) {
       return;
     }
 
-    if (!this.input.interact) {
+    if (!isInteractable(this.target.value)) {
       return;
     }
 

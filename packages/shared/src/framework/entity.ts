@@ -1,5 +1,5 @@
 import { IDisposable } from "@babylonjs/core";
-import { isDisposable } from "./types/disposable";
+import { isDisposable } from "./events/disposable";
 import { Component } from "./component";
 import { PlayerLoop } from "./player-loop";
 

@@ -4,7 +4,7 @@ import {
   TransformNode,
 } from "@babylonjs/core";
 import { CharacterTarget } from "./character-target";
-import { IUpdate, update } from "@nova-trials/shared";
+import { IUpdate, update, isTargetable } from "@nova-trials/shared";
 
 const MAX_RANGE = 2;
 
@@ -28,6 +28,12 @@ export class CharacterTargetSystem implements IUpdate {
     }
 
     const node = this.raycastResult.body?.transformNode;
-    this.target.value = node?.metadata.interactable;
+    const object = node?.metadata;
+    if (!isTargetable(object)) {
+      this.target.value = null;
+      return;
+    }
+
+    this.target.value = object;
   }
 }

@@ -1,16 +1,16 @@
 import { IDisposable, Observable } from "@babylonjs/core";
-import { IInteractable } from "../interactions/interactable";
+import { ITargetable } from "@nova-trials/shared";
 
 export class CharacterTarget implements IDisposable {
   readonly onChanged: Observable<void> = new Observable<void>();
 
-  private _value: IInteractable | null = null;
+  private _value: ITargetable | null = null;
 
-  get value(): IInteractable | null {
+  get value(): ITargetable | null {
     return this._value;
   }
 
-  set value(newValue: IInteractable | null) {
+  set value(newValue: ITargetable | null) {
     if (this._value === newValue) {
       return;
     }

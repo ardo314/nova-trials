@@ -1,6 +1,6 @@
-import { isObjectWithPropertOfType } from "@nova-trials/shared";
+import { isObjectWithPropertOfType } from "./framework/utils";
 
-export const interactable = Symbol("isInteractable");
+export const interactable = Symbol("interactable");
 
 export interface IInteractable {
   readonly [interactable]: boolean;

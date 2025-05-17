@@ -10,6 +10,7 @@ import {
   Vector3,
 } from "@babylonjs/core";
 import { Pose } from "@nova-trials/shared";
+import { attachWorldButton } from "../world-button";
 
 export type LobbyRoom = IDisposable & {};
 
@@ -45,6 +46,10 @@ async function loadReadyButton(scene: Scene, pose: Pose) {
   container.meshes.forEach((mesh) => {
     if (!(mesh instanceof Mesh)) {
       return;
+    }
+
+    if (mesh.name === "button") {
+      attachWorldButton(mesh);
     }
 
     const shape = new PhysicsShapeMesh(mesh, scene);

@@ -1,4 +1,5 @@
 import { useGame } from "../GameContext";
+import { HUD } from "./HUD";
 import { PauseMenu } from "./PauseMenu";
 import { TargetView } from "./TargetView";
 
@@ -7,8 +8,9 @@ export function GameView() {
 
   return (
     <>
-      {game.isPaused && <PauseMenu></PauseMenu>}
-      <TargetView />
+      {game.isPaused && <PauseMenu />}
+      {!game.isPaused && <HUD />}
+      {!game.isPaused && <TargetView />}
     </>
   );
 }

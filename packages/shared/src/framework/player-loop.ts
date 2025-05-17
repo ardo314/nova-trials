@@ -1,6 +1,6 @@
 import { Component } from "./component";
-import { ILateUpdate, hasLateUpdate, lateUpdate } from "./types/late-update";
-import { hasUpdate, IUpdate, update } from "./types/update";
+import { ILateUpdate, hasLateUpdate, lateUpdate } from "./events/late-update";
+import { hasUpdate, IUpdate, update } from "./events/update";
 
 type Command = () => void;
 

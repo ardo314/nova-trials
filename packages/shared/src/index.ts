@@ -1,7 +1,9 @@
 export * from "./framework";
 export * from "./math";
+export * from "./interactable";
 export * from "./messages";
 export * from "./state";
+export * from "./targetable";
 
 export const ROOM_NAME = "game";
 export const DEFAULT_CHARACTER_NAME = "Player";
