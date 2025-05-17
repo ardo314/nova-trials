@@ -1,4 +1,4 @@
-import { HavokPlugin, Scene, Vector3 } from "@babylonjs/core";
+import { HavokPlugin, IDisposable, Scene, Vector3 } from "@babylonjs/core";
 import { CharacterTarget } from "./character-target";
 import { Input } from "../input";
 import { CharacterKinematic } from "./character-kinematic";
@@ -15,10 +15,9 @@ import { CharacterView } from "./character-view";
 import { CharacterViewSyncSystem } from "./character-view-sync-system";
 import { getCharacterPhysicsBody } from "./character-physics";
 
-export type LocalCharacter = {
+export type LocalCharacter = IDisposable & {
   kinematic: CharacterKinematic;
   target: CharacterTarget;
-  dispose: () => void;
 };
 
 export function createLocalCharacter(
@@ -67,18 +66,33 @@ export function createLocalCharacter(
   entity.add(new CharacterInteractionSystem(target, characterInput));
   entity.add(new CharacterSendSystem(engine, room, kinematic));
 
-  return { kinematic, target, dispose: () => entity.dispose() };
+  const character: LocalCharacter = {
+    kinematic,
+    target,
+    dispose: () => entity.dispose(),
+  };
+  kinematic.body.metadata = character;
+  kinematic.head.metadata = character;
+
+  return character;
 }
+
+export type RemoteCharacter = IDisposable & {};
 
 export function createRemoteCharacter(
   scene: Scene,
   room: Room,
   state: CharacterState
-) {
+): RemoteCharacter {
   const entity = new Entity();
   const view = entity.add(new CharacterView(scene));
   entity.add(getCharacterPhysicsBody(scene, view.body));
   entity.add(new CharacterViewSyncSystem(view, state, getStateCallbacks(room)));
 
-  return { dispose: () => entity.dispose() };
+  const character: RemoteCharacter = {
+    dispose: () => entity.dispose(),
+  };
+  view.body.metadata = character;
+
+  return character;
 }

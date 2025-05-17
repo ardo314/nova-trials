@@ -1,4 +1,5 @@
 import {
+  IDisposable,
   Quaternion,
   Scene,
   TransformNode,
@@ -7,9 +8,8 @@ import {
 } from "@babylonjs/core";
 import { Entity, ILateUpdate, lateUpdate } from "@nova-trials/shared";
 
-export type FpsCamera = {
+export type FpsCamera = IDisposable & {
   target: TransformNode | null;
-  dispose: () => void;
 };
 
 class Target {
@@ -44,7 +44,7 @@ export function createFpsCamera(scene: Scene): FpsCamera {
   const target: Target = new Target();
   entity.add(new FollowSystem(camera, target));
 
-  return {
+  const fpsCamera: FpsCamera = {
     get target() {
       return target.value;
     },
@@ -53,4 +53,7 @@ export function createFpsCamera(scene: Scene): FpsCamera {
     },
     dispose: () => entity.dispose(),
   };
+  camera.metadata = fpsCamera;
+
+  return fpsCamera;
 }

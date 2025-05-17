@@ -8,7 +8,7 @@ export function TargetView() {
     <Snackbar
       open={game.hasTarget}
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      message="Note archived"
+      message="Use"
     />
   );
 }

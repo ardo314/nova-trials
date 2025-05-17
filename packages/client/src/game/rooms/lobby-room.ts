@@ -1,4 +1,5 @@
 import {
+  IDisposable,
   LoadAssetContainerAsync,
   Mesh,
   PhysicsBody,
@@ -10,9 +11,7 @@ import {
 } from "@babylonjs/core";
 import { Pose } from "@nova-trials/shared";
 
-export type LobbyRoom = {
-  dispose: () => void;
-};
+export type LobbyRoom = IDisposable & {};
 
 async function loadLobby(scene: Scene) {
   console.log("[Nova Trials]", "Loading lobby");

@@ -1,4 +1,5 @@
 import {
+  IDisposable,
   LoadAssetContainerAsync,
   Mesh,
   PhysicsBody,
@@ -7,9 +8,7 @@ import {
   Scene,
 } from "@babylonjs/core";
 
-export type RedLightGreenLightRoom = {
-  dispose: () => void;
-};
+export type RedLightGreenLightRoom = IDisposable & {};
 
 async function loadRedLightGreenLight(scene: Scene) {
   console.log("[Nova Trials]", "Loading red light green light");
