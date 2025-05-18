@@ -173,10 +173,7 @@ export class CharacterMovementSystem implements IUpdate {
     this.kinematic.yaw += this.input.yaw;
     this.kinematic.pitch += this.input.pitch;
 
-    const support = this.characterController.checkSupport(
-      dt,
-      new Vector3(0, -10, 0)
-    );
+    const support = this.characterController.checkSupport(dt, GRAVITY);
 
     if (
       support.supportedState === CharacterSupportedState.SUPPORTED ||

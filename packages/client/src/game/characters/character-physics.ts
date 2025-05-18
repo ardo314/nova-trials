@@ -36,10 +36,9 @@ export function getCharacterPhysicsBody(scene: Scene, node: TransformNode) {
 }
 
 export function getCharacterController(scene: Scene, position: Vector3) {
-  const controller = new PhysicsCharacterController(
+  return new PhysicsCharacterController(
     position,
     { capsuleHeight: HEIGHT, capsuleRadius: RADIUS },
     scene
   );
-  return controller;
 }
