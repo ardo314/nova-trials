@@ -159,7 +159,7 @@ export class CharacterMovementSystem implements IUpdate {
     this.applyAcceleration(wishdir, wishspeed, RUN_ACCELERATION, dt);
 
     // Reset the gravity velocity
-    this.velocity.y += GRAVITY_Y * dt;
+    this.velocity.y = GRAVITY_Y * dt;
 
     if (this.input.jump) {
       this.velocity.y = JUMP_SPEED;
@@ -173,9 +173,15 @@ export class CharacterMovementSystem implements IUpdate {
     this.kinematic.yaw += this.input.yaw;
     this.kinematic.pitch += this.input.pitch;
 
-    const support = this.characterController.checkSupport(dt, GRAVITY);
+    const support = this.characterController.checkSupport(
+      dt,
+      new Vector3(0, -10, 0)
+    );
 
-    if (support.supportedState === CharacterSupportedState.SUPPORTED) {
+    if (
+      support.supportedState === CharacterSupportedState.SUPPORTED ||
+      support.supportedState === CharacterSupportedState.SLIDING
+    ) {
       this.groundAccelerate(dt);
     } else {
       this.airAccelerate(dt);
