@@ -86,7 +86,7 @@ export function createRemoteCharacter(
 ): RemoteCharacter {
   const entity = new Entity();
   const view = entity.add(new CharacterView(scene));
-  entity.add(getCharacterPhysicsBody(scene, view.body));
+  //const physicsBody = entity.add(getCharacterPhysicsBody(scene, view.body));
   entity.add(new CharacterViewSyncSystem(view, state, getStateCallbacks(room)));
 
   const character: RemoteCharacter = {

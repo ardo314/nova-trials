@@ -8,6 +8,7 @@ import {
 } from "@babylonjs/core";
 import { CharacterYawSetter } from "./character-yaw";
 import { CharacterPosition } from "./character-position";
+import { CHARACTER_HEIGHT, CHARACTER_RADIUS } from "@nova-trials/shared";
 
 export class CharacterView
   implements CharacterPosition, CharacterYawSetter, IDisposable
@@ -20,11 +21,11 @@ export class CharacterView
 
     const mesh = MeshBuilder.CreateCapsule(
       "box",
-      { height: 1.8, radius: 0.5 },
+      { height: CHARACTER_HEIGHT, radius: CHARACTER_RADIUS },
       scene
     );
     mesh.setParent(this.body);
-    mesh.position.y = 0.9;
+    mesh.position.y = CHARACTER_HEIGHT / 2;
   }
 
   dispose() {

@@ -7,7 +7,7 @@ import {
 } from "@babylonjs/core";
 import { CharacterInput } from "./character-input";
 import { CharacterKinematic } from "./character-kinematic";
-import { IUpdate, update } from "@nova-trials/shared";
+import { CHARACTER_CENTER, IUpdate, update } from "@nova-trials/shared";
 
 const GRAVITY_Y = -20.0;
 const GRAVITY = new Vector3(0, GRAVITY_Y, 0);
@@ -187,6 +187,8 @@ export class CharacterMovementSystem implements IUpdate {
     this.characterController.setVelocity(this.velocity);
     this.characterController.integrate(dt, support, GRAVITY);
 
-    this.kinematic.position.copyFrom(this.characterController.getPosition());
+    this.kinematic.position
+      .copyFrom(this.characterController.getPosition())
+      .subtractInPlace(CHARACTER_CENTER);
   }
 }

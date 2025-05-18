@@ -8,8 +8,7 @@ import {
 import { CharacterYaw } from "./character-yaw";
 import { CharacterPitch } from "./character-pitch";
 import { CharacterPosition } from "./character-position";
-
-const EYE_HEIGHT = 1.5;
+import { CHARACTER_EYE_HEIGHT } from "@nova-trials/shared";
 
 export class CharacterKinematic
   implements CharacterPosition, CharacterYaw, CharacterPitch, IDisposable
@@ -26,7 +25,7 @@ export class CharacterKinematic
 
     this.head = new TransformNode("head", scene);
     this.head.setParent(this.body);
-    this.head.position.y = EYE_HEIGHT;
+    this.head.position.y = CHARACTER_EYE_HEIGHT;
     this.head.rotationQuaternion = Quaternion.Identity();
   }
 
