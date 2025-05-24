@@ -13,7 +13,6 @@ import { getStateCallbacks, Room } from "colyseus.js";
 import { CharacterState, Entity } from "@nova-trials/shared";
 import { CharacterView } from "./character-view";
 import { CharacterViewSyncSystem } from "./character-view-sync-system";
-import { getCharacterPhysicsBody } from "./character-physics";
 
 export type LocalCharacter = IDisposable & {
   kinematic: CharacterKinematic;
