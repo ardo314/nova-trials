@@ -4,48 +4,47 @@ import {
   Quaternion,
   Scene,
   TransformNode,
+  Vector3,
 } from "@babylonjs/core";
-import { Character } from "./character";
-import { CharacterViewSyncSystem } from "./systems/character-view-sync-system";
+import { CharacterYawSetter } from "./character-yaw";
+import { CharacterPosition } from "./character-position";
+import { CHARACTER_HEIGHT, CHARACTER_RADIUS } from "@nova-trials/shared";
 
-export class CharacterView implements IDisposable {
-  private constructor(
-    private readonly body: TransformNode,
-    private readonly viewSyncSystem: CharacterViewSyncSystem
-  ) {}
+export class CharacterView
+  implements CharacterPosition, CharacterYawSetter, IDisposable
+{
+  readonly body: TransformNode;
 
-  update() {
-    this.viewSyncSystem.execute();
+  constructor(scene: Scene) {
+    this.body = new TransformNode("characterView", scene);
+    this.body.rotationQuaternion = Quaternion.Identity();
+
+    const mesh = MeshBuilder.CreateCapsule(
+      "box",
+      { height: CHARACTER_HEIGHT, radius: CHARACTER_RADIUS },
+      scene
+    );
+    mesh.setParent(this.body);
+    mesh.position.y = CHARACTER_HEIGHT / 2;
   }
 
   dispose() {
     this.body.dispose();
   }
 
-  static Builder = class {
-    private readonly body: TransformNode;
-    private readonly viewSyncSystem: CharacterViewSyncSystem;
+  get position(): Vector3 {
+    return this.body.position;
+  }
 
-    constructor(scene: Scene, character: Character) {
-      this.body = new TransformNode("characterView", scene);
-      this.body.rotationQuaternion = Quaternion.Identity();
+  set position(value: Vector3) {
+    this.body.position.copyFrom(value);
+  }
 
-      const mesh = MeshBuilder.CreateBox(
-        "box",
-        { height: 2, width: 1, depth: 1 },
-        scene
-      );
-      mesh.setParent(this.body);
-      mesh.position.y = 1;
-
-      this.viewSyncSystem = new CharacterViewSyncSystem(
-        this.body,
-        character.body
-      );
-    }
-
-    build() {
-      return new CharacterView(this.body, this.viewSyncSystem);
-    }
-  };
+  set yaw(value: number) {
+    Quaternion.RotationAxisToRef(
+      Vector3.Up(),
+      value,
+      this.body.rotationQuaternion!
+    );
+  }
 }

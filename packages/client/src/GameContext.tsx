@@ -14,6 +14,7 @@ type ProviderProps = PropsWithChildren<{
 
 type ReactGameWrapper = {
   isPaused: boolean;
+  hasTarget: boolean;
   setIsPaused: (value: boolean) => void;
   toggleInspector: () => void;
 };
@@ -23,11 +24,15 @@ const Context = createContext<ReactGameWrapper | undefined>(undefined);
 export function GameProvider({ canvas, children }: ProviderProps) {
   const game = useMemo<Game>(() => new Game(window, canvas), [canvas]);
   const [isPaused, setIsPaused] = useState(game.isPaused);
+  const [hasTarget, setHasTarget] = useState(false);
 
   useEffect(() => {
     const observers = [
       game.onIsPausedChanged.add(() => {
         setIsPaused(game.isPaused);
+      }),
+      game.onLocalCharacterTargetChanged.add(() => {
+        setHasTarget(game.localCharacter?.target.value !== null);
       }),
     ];
 
@@ -45,6 +50,7 @@ export function GameProvider({ canvas, children }: ProviderProps) {
     <Context.Provider
       value={{
         isPaused,
+        hasTarget,
         setIsPaused(value: boolean) {
           game.isPaused = value;
         },

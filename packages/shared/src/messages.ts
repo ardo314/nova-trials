@@ -9,3 +9,9 @@ export namespace SetTransform {
     yaw: number;
   };
 }
+
+export namespace SetReady {
+  export const Type = "set-ready";
+
+  export type Message = {};
+}

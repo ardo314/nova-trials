@@ -2,30 +2,36 @@ import {
   DeviceSourceManager,
   Engine,
   HavokPlugin,
+  HemisphericLight,
   IDisposable,
   IKeyboardEvent,
   Observable,
   Observer,
   Scene,
+  Vector3,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import {
   CharacterState,
-  createLevel,
   DEFAULT_CHARACTER_NAME,
   GameState,
   JoinOptions,
-  LevelName,
+  PlayerLoop,
   ROOM_NAME,
+  RoomName,
 } from "@nova-trials/shared";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
-import { SpawnRoom, Level } from "@nova-trials/shared";
-import { Character } from "./characters/character";
-import { CharacterView } from "./characters/character-view";
 import { Input } from "./input";
-import { FpsCamera } from "./fps-camera";
 import "@babylonjs/loaders";
 import { Inspector } from "@babylonjs/inspector";
+import { createFpsCamera, FpsCamera } from "./fps-camera";
+import {
+  createLocalCharacter,
+  createRemoteCharacter,
+  LocalCharacter,
+} from "./characters";
+import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
+import { createRedLightGreenLightRoom } from "./rooms/red-light-green-light-room";
 
 const SERVER_HOST = "http://localhost:2567";
 
@@ -36,17 +42,18 @@ export class Game implements IDisposable {
   private readonly keyboardInputObserver: Observer<IKeyboardEvent>;
   private readonly client: Client;
   private readonly cammera: FpsCamera;
-  private readonly characters: Record<string, Character> = {};
-  private readonly characterViews: Record<string, CharacterView> = {};
-  private havokPlugin: HavokPlugin | null = null;
-  private room: Room<GameState> | null = null;
+  private readonly characters: Record<string, IDisposable> = {};
+  private physicsEngine: HavokPlugin | null = null;
+  private serverRoom: Room<GameState> | null = null;
   readonly scene: Scene;
-  readonly spawnRoom: SpawnRoom;
-  level: Level | null = null;
+  lobbyRoom: LobbyRoom | null = null;
+  room: IDisposable | null = null;
 
   private _isPaused: boolean = false;
 
   readonly onIsPausedChanged: Observable<void> = new Observable<void>();
+  readonly onLocalCharacterTargetChanged: Observable<void> =
+    new Observable<void>();
 
   get isPaused(): boolean {
     return this._isPaused;
@@ -57,6 +64,13 @@ export class Game implements IDisposable {
     this.onIsPausedChanged.notifyObservers();
   }
 
+  get localCharacter() {
+    if (!this.serverRoom) {
+      return undefined;
+    }
+    return this.characters[this.serverRoom.sessionId] as LocalCharacter;
+  }
+
   constructor(window: Window, canvas: HTMLCanvasElement) {
     console.log("[Nova Trials]", "Initializing game");
 
@@ -64,8 +78,10 @@ export class Game implements IDisposable {
     this.engine.runRenderLoop(this.update.bind(this));
 
     this.scene = new Scene(this.engine);
-    this.spawnRoom = new SpawnRoom(this.scene);
-    this.cammera = new FpsCamera(this.scene);
+
+    new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
+
+    this.cammera = createFpsCamera(this.scene);
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.input = new Input(this.deviceSourceManager);
@@ -78,16 +94,25 @@ export class Game implements IDisposable {
     );
   }
 
-  dispose(): void {
+  dispose() {
     console.log("[Nova Trials]", "Disposing game");
 
-    this.engine.dispose();
-    this.deviceSourceManager.dispose();
-    this.input.dispose();
+    this.serverRoom?.leave();
+    this.serverRoom?.removeAllListeners();
+    Object.values(this.characters).forEach((character) => {
+      character.dispose();
+    });
+    this.room?.dispose();
+    this.lobbyRoom?.dispose();
+    this.cammera.dispose();
+    this.scene.dispose();
     this.keyboardInputObserver.remove();
-    this.havokPlugin?.dispose();
-    this.room?.leave();
-    this.room?.removeAllListeners();
+    this.input.dispose();
+    this.deviceSourceManager.dispose();
+    this.physicsEngine?.dispose();
+    this.engine.dispose();
+    this.onIsPausedChanged.clear();
+    this.onLocalCharacterTargetChanged.clear();
 
     window.removeEventListener("resize", this.onWindowResize);
   }
@@ -95,21 +120,15 @@ export class Game implements IDisposable {
   async start() {
     console.log("[Nova Trials]", "Starting game");
 
-    await this.loadHavokPhysics();
+    this.physicsEngine = await this.loadHavokPhysics();
+    this.scene.enablePhysics(new Vector3(0, -9.81, 0), this.physicsEngine);
+    this.lobbyRoom = await createLobbyRoom(this.scene);
     await this.join();
-    await this.spawnRoom.load();
   }
 
   private update() {
-    for (const character of Object.values(this.characters)) {
-      character.update();
-    }
+    PlayerLoop.tick();
 
-    for (const view of Object.values(this.characterViews)) {
-      view.update();
-    }
-
-    this.cammera.update();
     this.scene.render();
   }
 
@@ -128,31 +147,37 @@ export class Game implements IDisposable {
   private onCharacterAdd(state: CharacterState, index: string) {
     console.log("[Nova Trials]", "Character added", state.name, index);
 
-    if (this.room === null) {
+    if (this.serverRoom === null) {
       console.error("[Nova Trials]", "Room is null");
       return;
     }
 
-    const characterBuilder = new Character.Builder(this.scene);
-
-    if (index === this.room.sessionId) {
-      characterBuilder
-        .withInitialState(state)
-        .withControls(this.input, this.room);
-    } else {
-      characterBuilder.withStateSync(this.room, state);
+    if (this.physicsEngine === null) {
+      console.error("[Nova Trials]", "HavokEngine is null");
+      return;
     }
 
-    const character = characterBuilder.build();
-    this.characters[index] = character;
-
-    if (character.isRemote) {
-      this.characterViews[index] = new CharacterView.Builder(
+    if (index === this.serverRoom.sessionId) {
+      const character = createLocalCharacter(
+        this.physicsEngine,
         this.scene,
-        character
-      ).build();
+        this.input,
+        this.serverRoom,
+        state
+      );
+      this.characters[index] = character;
+      this.cammera.target = character.kinematic.head;
+
+      character.target.onChanged.add(() => {
+        this.onLocalCharacterTargetChanged.notifyObservers();
+      });
     } else {
-      this.cammera.target = character.head;
+      const character = createRemoteCharacter(
+        this.scene,
+        this.serverRoom,
+        state
+      );
+      this.characters[index] = character;
     }
   }
 
@@ -161,16 +186,16 @@ export class Game implements IDisposable {
 
     this.characters[index].dispose();
     delete this.characters[index];
-
-    this.characterViews[index]?.dispose();
-    delete this.characterViews[index];
   }
 
-  private async onLevelChange(level: string) {
-    this.level?.dispose();
+  private async onRoomNameChange(room: string) {
+    this.room?.dispose();
 
-    this.level = createLevel(level as LevelName, this.scene);
-    await this.level.load();
+    switch (room) {
+      case RoomName.RedLightGreenLight:
+        this.room = await createRedLightGreenLightRoom(this.scene);
+        break;
+    }
   }
 
   private onError(code: number, message?: string) {
@@ -188,22 +213,29 @@ export class Game implements IDisposable {
       name: DEFAULT_CHARACTER_NAME,
     };
 
-    this.room = await this.client.joinOrCreate(ROOM_NAME, options);
-    this.room.onMessage("*", (type, message) => console.log(type, message));
-    this.room.onError(this.onError.bind(this));
-    this.room.onLeave(this.onLeave.bind(this));
+    this.serverRoom = await this.client.joinOrCreate(ROOM_NAME, options);
+    this.serverRoom.onMessage("*", (type, message) =>
+      console.log(type, message)
+    );
+    this.serverRoom.onError(this.onError.bind(this));
+    this.serverRoom.onLeave(this.onLeave.bind(this));
 
-    const $ = getStateCallbacks(this.room);
+    const $ = getStateCallbacks(this.serverRoom);
 
-    $(this.room.state).listen("level", this.onLevelChange.bind(this));
-    $(this.room.state).characters.onAdd(this.onCharacterAdd.bind(this));
-    $(this.room.state).characters.onRemove(this.onCharacterRemove.bind(this));
+    $(this.serverRoom.state).listen(
+      "roomName",
+      this.onRoomNameChange.bind(this)
+    );
+    $(this.serverRoom.state).characters.onAdd(this.onCharacterAdd.bind(this));
+    $(this.serverRoom.state).characters.onRemove(
+      this.onCharacterRemove.bind(this)
+    );
   }
 
   private async loadHavokPhysics() {
     console.log("[Nova Trials]", "Loading Havok Physics");
 
-    this.havokPlugin = new HavokPlugin(true, await HavokPhysics());
+    return new HavokPlugin(true, await HavokPhysics());
   }
 
   private onWindowResize = () => {
@@ -220,12 +252,5 @@ export class Game implements IDisposable {
     } else {
       Inspector.Hide();
     }
-  }
-
-  get localCharacter() {
-    if (!this.room) {
-      return undefined;
-    }
-    return this.characters[this.room.sessionId];
   }
 }

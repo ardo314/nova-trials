@@ -5,20 +5,18 @@ import {
   GameState,
   getRandomElement,
   JoinOptions,
-  Level,
   SetTransform,
-  SpawnRoom,
-  createLevel,
-  LevelName,
+  SetReady,
+  RoomName,
 } from "@nova-trials/shared";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
+import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 
 export class Game extends Room<GameState> {
   private readonly engine: Engine;
   private readonly scene: Scene;
-  private readonly spawnRoom: SpawnRoom;
-  private level: Level | null = null;
+  private lobbyRoom: LobbyRoom | null = null;
 
   state = new GameState();
 
@@ -27,16 +25,16 @@ export class Game extends Room<GameState> {
 
     this.engine = new NullEngine();
     this.scene = new Scene(this.engine);
-    this.spawnRoom = new SpawnRoom(this.scene);
   }
 
   async onCreate(options: any) {
     console.log("room created!");
 
     this.onMessage(SetTransform.Type, this.onSetTransform.bind(this));
+    this.onMessage(SetReady.Type, this.onSetReady.bind(this));
 
-    await this.spawnRoom.load();
-    await this.changeLevel("red-light-green-light");
+    this.lobbyRoom = await createLobbyRoom();
+    this.state.roomName = RoomName.RedLightGreenLight;
   }
 
   onJoin(client: Client, options: JoinOptions) {
@@ -44,9 +42,7 @@ export class Game extends Room<GameState> {
 
     const state = new CharacterState();
     state.name = options.name ?? DEFAULT_CHARACTER_NAME;
-    state.position.assign(
-      getRandomElement(this.spawnRoom.spawns).getAbsolutePosition()
-    );
+    state.position.assign(getRandomElement(this.lobbyRoom.spawns).position);
 
     this.state.characters.set(client.sessionId, state);
   }
@@ -59,27 +55,40 @@ export class Game extends Room<GameState> {
   }
 
   onDispose() {
+    this.engine.dispose();
+    this.scene.dispose();
     console.log("room", this.roomId, "disposing...");
-  }
-
-  private async changeLevel(name: LevelName) {
-    if (this.level) {
-      this.level.dispose();
-    }
-
-    this.level = createLevel(name, this.scene);
-    await this.level.load();
-    this.state.level = name;
   }
 
   private onSetTransform(client: Client, message: SetTransform.Message) {
     const character = this.state.characters.get(client.sessionId);
-    if (character) {
-      character.position.x = message.x;
-      character.position.y = message.y;
-      character.position.z = message.z;
-      character.rotation.yaw = message.yaw;
-      character.rotation.pitch = message.pitch;
+    if (!character) {
+      console.warn(
+        "SetTransform",
+        "Character not found for client",
+        client.sessionId
+      );
+      return;
     }
+
+    character.position.x = message.x;
+    character.position.y = message.y;
+    character.position.z = message.z;
+    character.rotation.yaw = message.yaw;
+    character.rotation.pitch = message.pitch;
+  }
+
+  private onSetReady(client: Client, message: SetReady.Message) {
+    const character = this.state.characters.get(client.sessionId);
+    if (!character) {
+      console.warn(
+        "SetReady",
+        "Character not found for client",
+        client.sessionId
+      );
+      return;
+    }
+
+    character.isReady = true;
   }
 }

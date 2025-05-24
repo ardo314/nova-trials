@@ -1,4 +1,5 @@
 import { MapSchema, Schema, type } from "@colyseus/schema";
+import { RoomName } from ".";
 
 export class Vector3State extends Schema {
   @type("number") x: number = 0;
@@ -23,9 +24,10 @@ export class CharacterState extends Schema {
   @type(Vector3State) position: Vector3State = new Vector3State();
   @type(CharacterRotationState) rotation: CharacterRotationState =
     new CharacterRotationState();
+  @type("boolean") isReady: boolean = false;
 }
 
 export class GameState extends Schema {
-  @type("string") level: string = "";
+  @type("string") roomName: RoomName | "" = "";
   @type({ map: CharacterState }) characters = new MapSchema<CharacterState>();
 }
