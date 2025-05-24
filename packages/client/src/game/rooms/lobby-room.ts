@@ -33,6 +33,27 @@ async function loadLobby(scene: Scene) {
   return container;
 }
 
+async function loadDoor(scene: Scene, pose: Pose) {
+  console.log("[Nova Trials]", "Loading door");
+  const container = await LoadAssetContainerAsync("door.glb", scene);
+  container.addAllToScene();
+
+  const door = container.meshes.find((mesh) => mesh.name === "door");
+  door?.position.copyFrom(pose.position);
+  door?.rotationQuaternion?.copyFrom(pose.rotation);
+
+  container.meshes.forEach((mesh) => {
+    if (!(mesh instanceof Mesh)) {
+      return;
+    }
+
+    const shape = new PhysicsShapeMesh(mesh, scene);
+    const body = new PhysicsBody(mesh, PhysicsMotionType.STATIC, false, scene);
+    body.shape = shape;
+  });
+  return container;
+}
+
 async function loadReadyButton(scene: Scene, pose: Pose) {
   console.log("[Nova Trials]", "Loading ready button");
 
@@ -65,6 +86,7 @@ export async function createLobbyRoom(scene: Scene): Promise<LobbyRoom> {
 
   const assets = await Promise.all([
     loadLobby(scene),
+    loadDoor(scene, new Pose(new Vector3(0, 0, 0.5), Quaternion.Identity())),
     loadReadyButton(
       scene,
       new Pose(new Vector3(0, -1, 24), Quaternion.Identity())
