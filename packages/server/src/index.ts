@@ -1,5 +1,4 @@
 import { listen } from "@colyseus/tools";
-global.XMLHttpRequest = require("xhr2");
 
 // Import Colyseus config
 import app from "./app.config";

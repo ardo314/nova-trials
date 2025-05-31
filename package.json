@@ -17,6 +17,7 @@
     "@colyseus/schema": "^3.0.10"
   },
   "devDependencies": {
+    "tsup": "^8.5.0",
     "@types/node": "^22.13.1",
     "typescript": "^5.7.3"
   }

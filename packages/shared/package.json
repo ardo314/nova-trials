@@ -2,9 +2,10 @@
   "name": "@nova-trials/shared",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
-  "main": "build/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsup ./src"
   }
 }
