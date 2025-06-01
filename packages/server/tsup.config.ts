@@ -8,4 +8,5 @@ export default defineConfig({
   clean: true,
   dts: false,
   minify: true,
+  noExternal: ["@nova-trials/shared"],
 });
