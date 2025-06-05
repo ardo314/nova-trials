@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "tsx watch src/index.ts",
-    "build": "tsup ./src"
+    "build": "tsup"
   },
   "devDependencies": {
     "@colyseus/loadtest": "^0.16.0",
