@@ -8,7 +8,7 @@ import {
   SetTransform,
   SetReady,
   RoomName,
-} from "@nova-trials/shared";
+} from "../../shared/dist";
 import { Engine, NullEngine, Scene } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
