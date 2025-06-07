@@ -1,5 +1,5 @@
 import { IDisposable } from "@babylonjs/core";
-import { GetCallbackProxy } from "@colyseus/schema";
+import { SchemaCallbackProxy } from "@colyseus/schema";
 import { CharacterState } from "@nova-trials/shared";
 import { CharacterView } from "./character-view";
 
@@ -10,7 +10,7 @@ export class CharacterViewSyncSystem implements IDisposable {
   constructor(
     view: CharacterView,
     state: CharacterState,
-    proxy: GetCallbackProxy
+    proxy: SchemaCallbackProxy<CharacterState>
   ) {
     this.detachPositionListener = proxy(state).position.onChange(() => {
       view.position.copyFromFloats(
