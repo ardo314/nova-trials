@@ -37,5 +37,12 @@ RUN npm ci --workspace=packages/server
 EXPOSE 80
 EXPOSE 2567
 
-# Start node server
-CMD ["node", "./packages/server/index.js"]
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Create entrypoint script to run both nginx and node server
+RUN echo -e "#!/bin/sh\n\
+node ./packages/server/index.js &\n\
+nginx -g 'daemon off;'" > entrypoint.sh && chmod +x entrypoint.sh
+
+# Use entrypoint script to start both services
+CMD ["./entrypoint.sh"]
