@@ -1,6 +1,8 @@
 # --- Builder Stage ---
 FROM node:18-alpine AS builder
 
+ARG BASE_URL="/"
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -19,6 +21,10 @@ RUN npm run build --workspace=packages/server
 # --- Production Stage ---
 FROM nginx:alpine AS production
 
+ENV NODE_ENV=production
+
+EXPOSE 80
+
 # Install Node.js for running the server
 RUN apk add --update nodejs npm
 
@@ -31,18 +37,16 @@ COPY --from=builder /app/package.json /app/package-lock.json /app
 COPY --from=builder /app/packages/shared/dist /app/packages/shared/package.json /app/packages/shared
 COPY --from=builder /app/packages/server/dist /app/packages/server/package.json /app/packages/server/.env.production /app/packages/server
 
-ENV NODE_ENV=production
 RUN npm ci --workspace=packages/server
-
-EXPOSE 80
-EXPOSE 2567
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Create entrypoint script to run both nginx and node server
 RUN echo -e "#!/bin/sh\n\
+echo 'Starting Node.js server...'\n\
 node ./packages/server/index.js &\n\
+echo 'Starting Nginx...'\n\
 nginx -g 'daemon off;'" > entrypoint.sh && chmod +x entrypoint.sh
 
 # Use entrypoint script to start both services
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["sh", "./entrypoint.sh"]

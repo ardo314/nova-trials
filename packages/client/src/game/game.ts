@@ -33,7 +33,7 @@ import {
 import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 import { createRedLightGreenLightRoom } from "./rooms/red-light-green-light-room";
 
-const SERVER_HOST = "http://localhost:2567";
+const SERVER_HOST = "http://localhost/server";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
