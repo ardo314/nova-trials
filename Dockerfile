@@ -24,27 +24,35 @@ FROM nginx:alpine AS production
 ENV NODE_ENV=production
 
 EXPOSE 80
+EXPOSE 2567
 
 # Install Node.js for running the server
 RUN apk add --update nodejs npm
 
 WORKDIR /app
 
-# Copy built files from the builder stage
+# Copy client files
 COPY --from=builder /app/packages/client/dist /usr/share/nginx/html
 
 COPY --from=builder /app/package.json /app/package-lock.json /app
-COPY --from=builder /app/packages/shared/dist /app/packages/shared/package.json /app/packages/shared
-COPY --from=builder /app/packages/server/dist /app/packages/server/package.json /app/packages/server/.env.production /app/packages/server
 
-RUN npm ci --workspace=packages/server
+# Copy shared package files
+COPY --from=builder /app/packages/shared/dist /app/packages/shared/dist
+COPY --from=builder /app/packages/shared/package.json /app/packages/shared/package.json
+
+# Copy server package files
+COPY --from=builder /app/packages/server/dist /app/packages/server/dist
+COPY --from=builder /app/packages/server/package.json /app/packages/server/package.json
+COPY --from=builder /app/packages/server/.env.production /app/packages/server/.env.production
+
+RUN npm ci
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Create entrypoint script to run both nginx and node server
 RUN echo -e "#!/bin/sh\n\
 echo 'Starting Node.js server...'\n\
-node ./packages/server/index.js &\n\
+node ./packages/server/dist/index.js &\n\
 echo 'Starting Nginx...'\n\
 nginx -g 'daemon off;'" > entrypoint.sh && chmod +x entrypoint.sh
 

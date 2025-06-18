@@ -1,5 +1,5 @@
 import { Quaternion, Scene, Vector3 } from "@babylonjs/core";
-import { Pose } from "../../../shared/dist";
+import { Pose } from "@nova-trials/shared";
 
 export type LobbyRoom = {
   spawns: Pose[];
