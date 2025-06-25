@@ -3,6 +3,7 @@ import { monitor } from "@colyseus/monitor";
 import { playground } from "@colyseus/playground";
 import { Game } from "./game";
 import { ROOM_NAME } from "@nova-trials/shared";
+import { withBasePath } from "./utils";
 
 export default config({
   initializeGameServer: (gameServer) => {
@@ -18,7 +19,7 @@ export default config({
      * (It is not recommended to expose this route in a production environment)
      */
     // if (process.env.NODE_ENV !== "production") {
-    app.use("/server", playground());
+    app.use(withBasePath("/server"), playground());
     // }
 
     /**
@@ -26,7 +27,7 @@ export default config({
      * It is recommended to protect this route with a password
      * Read more: https://docs.colyseus.io/tools/monitor/#restrict-access-to-the-panel-using-a-password
      */
-    app.use("/server/colyseus", monitor());
+    app.use(withBasePath("/server/colyseus"), monitor());
   },
 
   beforeListen: () => {

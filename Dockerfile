@@ -22,6 +22,7 @@ RUN npm run build --workspace=packages/server
 FROM nginx:alpine AS production
 
 ENV NODE_ENV=production
+ENV BASE_PATH=""
 
 EXPOSE 80
 EXPOSE 2567
@@ -49,10 +50,14 @@ RUN npm ci
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Create entrypoint script to run both nginx and node server
+# Create entrypoint script to run both nginx and node server, with BASE_PATH substitution for nginx.conf
 RUN echo -e "#!/bin/sh\n\
 echo 'Starting Node.js server...'\n\
 node ./packages/server/dist/index.js &\n\
+echo 'Configuring nginx with BASE_PATH=\${BASE_PATH:-/}...'\n\
+export BASE_PATH\n\
+envsubst '\${BASE_PATH}' < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp\n\
+mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf\n\
 echo 'Starting Nginx...'\n\
 nginx -g 'daemon off;'" > entrypoint.sh && chmod +x entrypoint.sh
 
