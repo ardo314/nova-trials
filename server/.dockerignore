@@ -1,0 +1,8 @@
+src/
+tsconfig.json
+tsup.config.ts
+*.ts
+*.tsx
+!dist/
+!package.json
+!README.md

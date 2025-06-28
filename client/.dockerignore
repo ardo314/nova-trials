@@ -1,0 +1,10 @@
+src/
+tsconfig.json
+tsup.config.ts
+vite.config.ts
+*.ts
+*.tsx
+!dist/
+!package.json
+!README.md
+public/
