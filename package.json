@@ -4,7 +4,9 @@
   "description": "Nova Trials",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "client",
+    "server",
+    "shared"
   ],
   "dependencies": {
     "@babylonjs/core": "7.52.2",
