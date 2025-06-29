@@ -32,8 +32,7 @@ import {
 } from "./characters";
 import { createLobbyRoom, LobbyRoom } from "./rooms/lobby-room";
 import { createRedLightGreenLightRoom } from "./rooms/red-light-green-light-room";
-
-const SERVER_HOST = "http://localhost/server";
+import { getServerHost } from "../utils";
 
 export class Game implements IDisposable {
   private readonly engine: Engine;
@@ -85,7 +84,7 @@ export class Game implements IDisposable {
 
     this.deviceSourceManager = new DeviceSourceManager(this.engine);
     this.input = new Input(this.deviceSourceManager);
-    this.client = new Client(SERVER_HOST);
+    this.client = new Client(getServerHost());
 
     window.addEventListener("resize", this.onWindowResize);
 

@@ -11,13 +11,17 @@ import {
 } from "@babylonjs/core";
 import { Pose } from "@nova-trials/shared";
 import { attachWorldButton } from "../world-button";
+import { withServerHost } from "../../utils";
 
 export type LobbyRoom = IDisposable & {};
 
 async function loadLobby(scene: Scene) {
   console.log("[Nova Trials]", "Loading lobby");
 
-  const container = await LoadAssetContainerAsync("lobby-room.glb", scene);
+  const container = await LoadAssetContainerAsync(
+    withServerHost("lobby-room.glb"),
+    scene
+  );
   container.addAllToScene();
 
   container.meshes.forEach((mesh) => {
@@ -35,7 +39,10 @@ async function loadLobby(scene: Scene) {
 
 async function loadDoor(scene: Scene, pose: Pose) {
   console.log("[Nova Trials]", "Loading door");
-  const container = await LoadAssetContainerAsync("door.glb", scene);
+  const container = await LoadAssetContainerAsync(
+    withServerHost("door.glb"),
+    scene
+  );
   container.addAllToScene();
 
   const door = container.meshes.find((mesh) => mesh.name === "door");
@@ -57,7 +64,10 @@ async function loadDoor(scene: Scene, pose: Pose) {
 async function loadReadyButton(scene: Scene, pose: Pose) {
   console.log("[Nova Trials]", "Loading ready button");
 
-  const container = await LoadAssetContainerAsync("ready-button.glb", scene);
+  const container = await LoadAssetContainerAsync(
+    withServerHost("ready-button.glb"),
+    scene
+  );
   container.addAllToScene();
 
   const base = container.meshes.find((mesh) => mesh.name === "base");

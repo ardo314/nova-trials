@@ -7,6 +7,7 @@ import {
   PhysicsShapeMesh,
   Scene,
 } from "@babylonjs/core";
+import { withServerHost } from "../../utils";
 
 export type RedLightGreenLightRoom = IDisposable & {};
 
@@ -14,7 +15,7 @@ async function loadRedLightGreenLight(scene: Scene) {
   console.log("[Nova Trials]", "Loading red light green light");
 
   const container = await LoadAssetContainerAsync(
-    "red-light-green-light-room.glb",
+    withServerHost("red-light-green-light-room.glb"),
     scene
   );
   container.addAllToScene();

@@ -21,5 +21,5 @@ export function withBasePath(path: string) {
     path = path.substring(1);
   }
 
-  return `${getBasePath()}/server/${path}`;
+  return `${getBasePath()}/${path}`;
 }

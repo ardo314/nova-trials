@@ -15,7 +15,8 @@ export default config({
   },
 
   initializeExpress: (app) => {
-    app.use(express.static("../public"));
+    app.use(withBasePath("/"), express.static("../public"));
+
     /**
      * Use @colyseus/playground
      * (It is not recommended to expose this route in a production environment)
