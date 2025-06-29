@@ -1,5 +1,5 @@
 export function getServerHost(): string {
-  if (import.meta.env.VITE_SERVER_HOST) {
+  if (import.meta.env.DEV && import.meta.env.VITE_SERVER_HOST) {
     return import.meta.env.VITE_SERVER_HOST;
   }
   return `${window.location.origin}${window.location.pathname}`;
