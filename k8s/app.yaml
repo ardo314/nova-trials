@@ -1,0 +1,10 @@
+---
+apiVersion: wandelbots.com/v1alpha1
+kind: App
+metadata:
+  name: nova-trials
+spec:
+  appIcon: app_icon.png
+  cellName: cell
+  image: ardo314/nova-trials:latest
+  port: 2567
